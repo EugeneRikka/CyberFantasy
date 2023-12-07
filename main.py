@@ -286,7 +286,7 @@ def dump_teams_rating_to_excel(writer, fantasy_points, pro_players, count, balan
     sf_top_dream_teams_df.to_excel(writer, sheet_name='Top dream teams', best_fit=columns)
 
 
-def dump_day(name, tournament_id, reload_data, min_bound, max_bound, sort_key):
+def dump_day(name, tournament_id, reload_data, min_bound, max_bound, sort_key, balance):
     pro_players = get_pro_players()
 
     # change role groups
@@ -300,7 +300,7 @@ def dump_day(name, tournament_id, reload_data, min_bound, max_bound, sort_key):
     with pd.ExcelWriter(name) as writer:
         dump_points_to_excel(writer, fantasy_points, sort_key)
         dump_captains_to_excel(writer, fantasy_points)
-        dump_teams_rating_to_excel(writer, fantasy_points, pro_players, count=1000, balance=140)
+        dump_teams_rating_to_excel(writer, fantasy_points, pro_players, count=1000, balance=balance)
 
 
 def main():
@@ -317,9 +317,9 @@ def main():
     tenth_day = 7406129687
     max_bound = 9999999999
 
-    dump_day('day10.xlsx', tournament_id, False, tenth_day, max_bound, 'day points')
-    # dump_day('overall.xlsx', tournament_id, False, first_day, max_bound, 'mean points per match')
-    # dump_day('playoff.xlsx', tournament_id, False, third_day, max_bound, 'mean points per match')
+    dump_day('day10.xlsx', tournament_id, False, tenth_day, max_bound, 'day points', 140)
+    # dump_day('overall.xlsx', tournament_id, False, first_day, max_bound, 'mean points per match', 100)
+    # dump_day('playoff.xlsx', tournament_id, False, third_day, max_bound, 'mean points per match', 100)
 
 
 if __name__ == '__main__':
