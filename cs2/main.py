@@ -410,7 +410,7 @@ def dump_event(event_name: str, event_id: int, reload: bool, pro_players: dict, 
 def main():
     pro_players = get_pro_players()
 
-    dump_event('pgl-cs2-major-copenhagen-2024-opening-stage', 7258, False, pro_players, [2370595, 2370611, 2370619, 9999999999])
+    dump_event('pgl-cs2-major-copenhagen-2024-opening-stage', 7258, False, pro_players, [2370595, 2370611, 2370619, 2370625, 9999999999])
 
     dump_event('pgl-cs2-major-copenhagen-2024', 7148, False, pro_players, [1, 9999999999])
 
