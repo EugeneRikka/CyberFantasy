@@ -1,14 +1,4 @@
 {
-  "NickelBack": {
-    "team": "AMKAL",
-    "role": "rifler",
-    "cost": 10
-  },
-  "sense": {
-    "team": "Apeks",
-    "role": "rifler",
-    "cost": 10
-  },
   "JT": {
     "team": "Complexity",
     "role": "rifler",
@@ -54,36 +44,6 @@
     "role": "rifler",
     "cost": 10
   },
-  "dav1g": {
-    "team": "KOI",
-    "role": "rifler",
-    "cost": 10
-  },
-  "JUST": {
-    "team": "KOI",
-    "role": "rifler",
-    "cost": 10
-  },
-  "NEKIZ": {
-    "team": "Legacy",
-    "role": "rifler",
-    "cost": 10
-  },
-  "b4rtiN": {
-    "team": "Legacy",
-    "role": "rifler",
-    "cost": 10
-  },
-  "Westmelon": {
-    "team": "Lynn Vision",
-    "role": "rifler",
-    "cost": 10
-  },
-  "EmiliaQAQ": {
-    "team": "Lynn Vision",
-    "role": "rifler",
-    "cost": 10
-  },
   "Aleksib": {
     "team": "NAVI",
     "role": "rifler",
@@ -91,11 +51,6 @@
   },
   "n1ssim": {
     "team": "paiN",
-    "role": "rifler",
-    "cost": 10
-  },
-  "roman": {
-    "team": "SAW",
     "role": "rifler",
     "cost": 10
   },
@@ -108,31 +63,6 @@
     "team": "TheMongolz",
     "role": "rifler",
     "cost": 10
-  },
-  "isak": {
-    "team": "GamerLegion",
-    "role": "rifler",
-    "cost": 10
-  },
-  "Keoz": {
-    "team": "GamerLegion",
-    "role": "rifler",
-    "cost": 10
-  },
-  "Krad": {
-    "team": "AMKAL",
-    "role": "rifler",
-    "cost": 15
-  },
-  "CacaNito": {
-    "team": "Apeks",
-    "role": "rifler",
-    "cost": 15
-  },
-  "STYKO": {
-    "team": "Apeks",
-    "role": "rifler",
-    "cost": 15
   },
   "Grim": {
     "team": "Complexity",
@@ -151,21 +81,6 @@
   },
   "Patti": {
     "team": "ECSTATIC",
-    "role": "rifler",
-    "cost": 15
-  },
-  "Goofy": {
-    "team": "Ence",
-    "role": "rifler",
-    "cost": 15
-  },
-  "dycha": {
-    "team": "Ence",
-    "role": "rifler",
-    "cost": 15
-  },
-  "gla1ve": {
-    "team": "Ence",
     "role": "rifler",
     "cost": 15
   },
@@ -199,41 +114,6 @@
     "role": "rifler",
     "cost": 15
   },
-  "stadodo": {
-    "team": "KOI",
-    "role": "sniper",
-    "cost": 15
-  },
-  "mopoz": {
-    "team": "KOI",
-    "role": "rifler",
-    "cost": 15
-  },
-  "adamS": {
-    "team": "KOI",
-    "role": "rifler",
-    "cost": 15
-  },
-  "latto": {
-    "team": "Legacy",
-    "role": "rifler",
-    "cost": 15
-  },
-  "Starry": {
-    "team": "Lynn Vision",
-    "role": "rifler",
-    "cost": 15
-  },
-  "z4kr": {
-    "team": "Lynn Vision",
-    "role": "rifler",
-    "cost": 15
-  },
-  "Jee": {
-    "team": "Lynn Vision",
-    "role": "sniper",
-    "cost": 15
-  },
   "siuhy": {
     "team": "Mouz",
     "role": "rifler",
@@ -252,21 +132,6 @@
   "nqz": {
     "team": "paiN",
     "role": "sniper",
-    "cost": 15
-  },
-  "ewjerkz": {
-    "team": "SAW",
-    "role": "rifler",
-    "cost": 15
-  },
-  "MUTiRiS": {
-    "team": "SAW",
-    "role": "rifler",
-    "cost": 15
-  },
-  "arrozdoce": {
-    "team": "SAW",
-    "role": "rifler",
     "cost": 15
   },
   "chopper": {
@@ -294,36 +159,6 @@
     "role": "rifler",
     "cost": 15
   },
-  "Snax": {
-    "team": "GamerLegion",
-    "role": "rifler",
-    "cost": 15
-  },
-  "volt": {
-    "team": "GamerLegion",
-    "role": "rifler",
-    "cost": 15
-  },
-  "Forester": {
-    "team": "AMKAL",
-    "role": "rifler",
-    "cost": 20
-  },
-  "ICY": {
-    "team": "AMKAL",
-    "role": "sniper",
-    "cost": 20
-  },
-  "TRAVIS": {
-    "team": "AMKAL",
-    "role": "rifler",
-    "cost": 20
-  },
-  "jkaem": {
-    "team": "Apeks",
-    "role": "rifler",
-    "cost": 20
-  },
   "Boombl4": {
     "team": "Cloud9",
     "role": "sniper",
@@ -346,11 +181,6 @@
   },
   "kraghen": {
     "team": "ECSTATIC",
-    "role": "rifler",
-    "cost": 20
-  },
-  "Kylar": {
-    "team": "Ence",
     "role": "rifler",
     "cost": 20
   },
@@ -399,16 +229,6 @@
     "role": "rifler",
     "cost": 20
   },
-  "coldzera": {
-    "team": "Legacy",
-    "role": "sniper",
-    "cost": 20
-  },
-  "dumau": {
-    "team": "Legacy",
-    "role": "rifler",
-    "cost": 20
-  },
   "xertioN": {
     "team": "Mouz",
     "role": "rifler",
@@ -417,11 +237,6 @@
   "lux": {
     "team": "paiN",
     "role": "rifler",
-    "cost": 20
-  },
-  "story": {
-    "team": "SAW",
-    "role": "sniper",
     "cost": 20
   },
   "magixx": {
@@ -449,16 +264,6 @@
     "role": "rifler",
     "cost": 20
   },
-  "acoR": {
-    "team": "GamerLegion",
-    "role": "sniper",
-    "cost": 20
-  },
-  "nawwk": {
-    "team": "Apeks",
-    "role": "sniper",
-    "cost": 25
-  },
   "Perfecto": {
     "team": "Cloud9",
     "role": "rifler",
@@ -472,11 +277,6 @@
   "EliGE": {
     "team": "Complexity",
     "role": "rifler",
-    "cost": 25
-  },
-  "hades": {
-    "team": "Ence",
-    "role": "sniper",
     "cost": 25
   },
   "KSCERATO": {

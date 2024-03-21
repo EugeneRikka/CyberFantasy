@@ -29,9 +29,13 @@ def get_selenium_driver() -> uc.Chrome:
 
 
 def get_page(url: str) -> BeautifulSoup:
+    print(f'load: {url}')
     driver = get_selenium_driver()
     driver.get(url)
-    return BeautifulSoup(markup=driver.page_source, features='html.parser')
+    soup = BeautifulSoup(markup=driver.page_source, features='html.parser')
+    driver.quit()
+
+    return soup
 
 
 def get_soup(base_url: str, url: str, reload: bool = False) -> BeautifulSoup:
@@ -155,8 +159,8 @@ def create_pro_players_template(event_data: dict):
         json.dump(pro_players, file, indent=2)
 
 
-def get_pro_players() -> dict:
-    with open('pro_players.json', 'r', encoding='utf8') as file:
+def get_pro_players(file_name: str) -> dict:
+    with open(file_name, 'r', encoding='utf8') as file:
         return json.load(file)
 
 
@@ -272,21 +276,21 @@ def calculate_team_points(players_points, pro_players, players_names, captain_na
     return team_info
 
 
-def generate_teams(fantasy_points, pro_players, teams_count, balance):
+def generate_teams(fantasy_points, pro_players, teams_count, balance, sort_key):
     dream_teams_rating = []
     teams_rating = []
 
-    sorted_riflers_points = dict(sorted(fantasy_points['rifler'].items(), key=lambda x: x[1]['day points'], reverse=True))
+    sorted_riflers_points = dict(sorted(fantasy_points['rifler'].items(), key=lambda x: x[1][sort_key], reverse=True))
     riflers_names = list(sorted_riflers_points.keys())
-    sorted_sniper_points = dict(sorted(fantasy_points['sniper'].items(), key=lambda x: x[1]['day points'], reverse=True))
+    sorted_sniper_points = dict(sorted(fantasy_points['sniper'].items(), key=lambda x: x[1][sort_key], reverse=True))
     snipers_names = list(sorted_sniper_points.keys())
 
     for riflers_combination in itertools.combinations(riflers_names, 4):
         for sniper_name in snipers_names:
             team_names = [sniper_name] + list(riflers_combination)
-            players_points = [sorted_sniper_points[sniper_name]['day points']]
+            players_points = [sorted_sniper_points[sniper_name][sort_key]]
             for rifler_name in riflers_combination:
-                players_points.append(sorted_riflers_points[rifler_name]['day points'])
+                players_points.append(sorted_riflers_points[rifler_name][sort_key])
 
             for captain_name in team_names:
                 team_info = calculate_team_points(players_points, pro_players, team_names, captain_name)
@@ -302,8 +306,8 @@ def generate_teams(fantasy_points, pro_players, teams_count, balance):
     return [dream_teams_rating, teams_rating]
 
 
-def dump_teams_rating_to_excel(writer, fantasy_points, pro_players, teams_count, balance):
-    dream_teams_rating, teams_rating = generate_teams(fantasy_points, pro_players, teams_count, balance)
+def dump_teams_rating_to_excel(writer, fantasy_points, pro_players, teams_count, balance, sort_key):
+    dream_teams_rating, teams_rating = generate_teams(fantasy_points, pro_players, teams_count, balance, sort_key)
 
     teams_rating = sorted(teams_rating, key=lambda x: x['points'], reverse=True)
     dream_teams_rating = sorted(dream_teams_rating, key=lambda x: x['points'], reverse=True)
@@ -350,30 +354,56 @@ def compute_overall_fantasy_points(event_data: dict) -> dict:
                         'team': map_stat['team1_name'] if player_index < 5 else map_stat['team2_name'],
                         'points': [],
                         'points per round': [],
-                        'maps points': ''
+                        'maps points': '',
+                        'maps': {}
                     }
+                player_info = fantasy_points[player_name]
 
                 points_details = calculate_map_points(player_stat, 1)
                 points_sum = round(sum(points_details.values()), 3)
-                fantasy_points[player_name]['points'].append(points_sum)
-                fantasy_points[player_name]['points per round'].append(round(points_sum / map_stat['rounds'], 3))
-                fantasy_points[player_name]['maps points'] += '{0: <7}'.format(points_sum)
+                player_info['points'].append(points_sum)
+                player_info['points per round'].append(round(points_sum / map_stat['rounds'], 3))
+                player_info['maps points'] += '{0: <7}'.format(points_sum)
 
-    for player_name, player_info in fantasy_points.items():
+                if map_stat['name'] not in player_info:
+                    player_info['maps'][map_stat['name']] = {
+                        'points': [],
+                        'points per round': [],
+                        'map points': ''
+                    }
+
+                map_info = player_info['maps'][map_stat['name']]
+                map_info['points'].append(points_sum)
+                map_info['points per round'].append(round(points_sum / map_stat['rounds'], 3))
+                map_info['map points'] += '{0: <7}'.format(points_sum)
+    return fantasy_points
+
+
+def postproc_overall_fantasy_points(fantasy_points: dict):
+    for player_info in fantasy_points.values():
         player_info['mean points'] = np.round(np.mean(player_info['points']), 3)
         player_info['mean points per round'] = np.round(np.mean(player_info['points per round']), 3)
+        player_info['min points'] = np.round(min(player_info['points']), 3)
+        player_info['max points'] = np.round(max(player_info['points']), 3)
 
-    return fantasy_points
+        for map_name, map_info in player_info['maps'].items():
+            map_info['mean points'] = np.round(np.mean(map_info['points']), 3)
+            map_info['mean points per round'] = np.round(np.mean(map_info['points per round']), 3)
+
+    # print(fantasy_points)
 
 
 def dump_overall_to_excel(writer, fantasy_points, sort_key):
     fantasy_points = dict(sorted(fantasy_points.items(), key=lambda x: x[1][sort_key], reverse=True))
     data = list()
-    main_columns = ['team', 'mean points', 'mean points per round', 'maps points']
+    main_columns = ['team', 'role', 'cost', 'mean points', 'mean points per round', 'min points', 'max points', 'maps points']
     for player_name, player_info in fantasy_points.items():
         row = [player_name]
         for column_name in main_columns:
-            row.append(player_info[column_name])
+            if column_name in player_info.keys():
+                row.append(player_info[column_name])
+            else:
+                row.append('')
         data.append(row)
 
     columns = ['name'] + main_columns
@@ -381,7 +411,7 @@ def dump_overall_to_excel(writer, fantasy_points, sort_key):
     sf = StyleFrame(df)
     sf.apply_column_style(
         cols_to_style=['maps points'],
-        styler_obj=Styler(font = 'Courier New', horizontal_alignment=utils.horizontal_alignments.left),
+        styler_obj=Styler(font='Courier New', horizontal_alignment=utils.horizontal_alignments.left),
     )
     sf.to_excel(writer, sheet_name=f'{sort_key}', best_fit=columns)
 
@@ -390,32 +420,109 @@ def dump_day(excel_file_name: str, pro_players: dict, fantasy_points: dict, sort
     with pd.ExcelWriter(excel_file_name) as writer:
         dump_points_to_excel(writer, fantasy_points, sort_key)
         dump_captains_to_excel(writer, fantasy_points)
-        dump_teams_rating_to_excel(writer, fantasy_points, pro_players, teams_count=1000, balance=balance)
+        dump_teams_rating_to_excel(writer, fantasy_points, pro_players, 1000, balance, 'day points')
 
 
-def dump_event(event_name: str, event_id: int, reload: bool, pro_players: dict, days_bounds: list):
-    event_data = get_event_data(event_id, reload)
+def dump_overall(excel_file_name: str, overall_fantasy_points: dict, pro_players: dict, balance: int):
+    with pd.ExcelWriter(excel_file_name) as writer:
+        for player_name, player_stat in overall_fantasy_points.items():
+            if player_name in pro_players:
+                player_stat['role'] = pro_players[player_name]['role']
+                player_stat['cost'] = pro_players[player_name]['cost']
 
-    Path(event_name).mkdir(parents=True, exist_ok=True)
-    for day_num in range(1, len(days_bounds)):
-        fantasy_points = calculate_fantasy_points(pro_players, event_data, days_bounds[day_num - 1], days_bounds[day_num])
-        dump_day(f'{event_name}/day{day_num}.xlsx', pro_players, fantasy_points, 'day points', 100)
-
-    overall_fantasy_points = compute_overall_fantasy_points(event_data)
-    with pd.ExcelWriter(f'{event_name}/overall.xlsx') as writer:
         dump_overall_to_excel(writer, overall_fantasy_points, 'mean points')
         dump_overall_to_excel(writer, overall_fantasy_points, 'mean points per round')
 
+        fantasy_points_by_role = {'rifler': {}, 'sniper': {}}
+        for player_name in pro_players:
+            if player_name in overall_fantasy_points:
+                role = pro_players[player_name]['role']
+                fantasy_points_by_role[role][player_name] = overall_fantasy_points[player_name]
+
+        dump_teams_rating_to_excel(writer, fantasy_points_by_role, pro_players, 1000, balance, 'mean points per round')
+
+
+def dump_event(event_name: str, event_id: int, reload: bool, pro_players: dict, days_bounds: list) -> dict:
+    event_data = get_event_data(event_id, reload)
+
+    Path('cs2_fantasy').mkdir(parents=True, exist_ok=True)
+    output_path = f'cs2_fantasy/{event_name}'
+    Path(output_path).mkdir(parents=True, exist_ok=True)
+    for day_num in range(1, len(days_bounds)):
+        fantasy_points = calculate_fantasy_points(pro_players, event_data, days_bounds[day_num - 1], days_bounds[day_num])
+        dump_day(f'{output_path}/day{day_num}.xlsx', pro_players, fantasy_points, 'day points', 100)
+
+    overall_fantasy_points = compute_overall_fantasy_points(event_data)
+    postproc_overall_fantasy_points(overall_fantasy_points)
+    dump_overall(f'{output_path}/overall.xlsx', overall_fantasy_points, pro_players, 100)
+
+    return overall_fantasy_points
+
+
+def merge_dicts(dict1, dict2, excluded_keys):
+    merged_dict = {}
+    for key in set(dict1) | set(dict2):
+        if key in dict1 and key in dict2:
+            if isinstance(dict1[key], dict) and isinstance(dict2[key], dict):
+                merged_dict[key] = dict(merge_dicts(dict1[key], dict2[key], excluded_keys))
+            else:
+                if key not in excluded_keys:
+                    merged_dict[key] = dict1[key] + dict2[key]
+                else:
+                    merged_dict[key] = dict1[key]
+        elif key in dict1:
+            merged_dict[key] = dict1[key]
+        else:
+            merged_dict[key] = dict2[key]
+    return merged_dict
+
+
+def merge_overalls(overalls: list[dict]) -> dict:
+    overall_fantasy_points = overalls[0].copy()
+    for fantasy_points in overalls[1:]:
+        overall_fantasy_points = dict(merge_dicts(overall_fantasy_points, fantasy_points, ['team']))
+
+    return overall_fantasy_points
+
+
+def dump_merged_overalls(file_name:str, overalls: list[dict], pro_players: dict):
+    output_path = f'cs2_fantasy'
+    Path(output_path).mkdir(parents=True, exist_ok=True)
+
+    overall_fantasy_points = merge_overalls(overalls)
+    overall_fantasy_points = {key: value for key, value in overall_fantasy_points.items() if key in pro_players}
+
+    postproc_overall_fantasy_points(overall_fantasy_points)
+    dump_overall(f'{output_path}/{file_name}.xlsx', overall_fantasy_points, pro_players, 100)
+
 
 def main():
-    pro_players = get_pro_players()
+    pro_players = get_pro_players('pro_players.json')
 
-    dump_event('pgl-cs2-major-copenhagen-2024-opening-stage', 7258, False, pro_players, [2370595, 2370611, 2370619, 2370625, 9999999999])
+    overalls = [
+        dump_event('pgl-cs2-major-copenhagen-2024-na-rmr-closed-qualifier', 7409, False, pro_players, []),  # Jan 12th - Jan 14th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-closed-qualifier-a', 7392, False, pro_players, []),  # Jan 18th - Jan 20th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-closed-qualifier-b', 7619, False, pro_players, []),  # Jan 18th - Jan 20th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-east-asia-rmr-closed-qualifier', 7399, False, pro_players, []),  # Jan 19th - Jan 21st 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-sa-rmr-closed-qualifier', 7410, False, pro_players, []),  # Jan 19th - Jan 21st 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-decider-qualifier', 7391, False, pro_players, []),  # Jan 21st 2024
+        dump_event('blast-premier-spring-groups-2024', 7552, False, pro_players, []),  # Jan 22nd - Jan 28th 2024
+        dump_event('iem-katowice-2024-play-in', 7551, False, pro_players, []),  # Jan 31st - Feb 2nd 2024
+        dump_event('iem-katowice-2024', 7435, False, pro_players, []),  # Feb 3rd - Feb 11th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-a', 7259, False, pro_players, []),  # Feb 14th - Feb 17th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-b', 7577, False, pro_players, []),  # Feb 19th - Feb 22nd 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-asia-rmr', 7260, False, pro_players, []),  # Feb 26th - Feb 28th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-americas-rmr', 7261, False, pro_players, []),  # Mar 1st - Mar 4th 2024
+        dump_event('blast-premier-spring-showdown-2024', 7553, False, pro_players, []),  # Mar 6th - Mar 10th 2024
 
-    dump_event('pgl-cs2-major-copenhagen-2024', 7148, False, pro_players, [1, 9999999999])
+        dump_event('pgl-cs2-major-copenhagen-2024-opening-stage', 7258, False, pro_players, [2370595, 2370611, 2370619, 2370625, 9999999999]),
+        dump_event('pgl-cs2-major-copenhagen-2024', 7148, False, pro_players, [2370628, 2370644, 2370652, 2370658, 2370721, 2370723, 2370725, 2370727, 9999999999])
+    ]
 
-    dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-a', 7259, False, pro_players, [])
-    dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-b', 7577, False, pro_players, [])
+    pro_players_actual = get_pro_players('pro_players_actual.json')
+    dump_merged_overalls('overall', overalls, pro_players_actual)
+    dump_merged_overalls('overall_no_closed_qualifiers', overalls[6:], pro_players_actual)
+    dump_merged_overalls('overall_after_katowice', overalls[9:], pro_players_actual)
 
 
 if __name__ == '__main__':
