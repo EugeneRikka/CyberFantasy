@@ -170,6 +170,7 @@ def create_fantasy_points_template(pro_players):
         role = pro_players[player_name]['role']
         fantasy_points[role][player_name] = {
             'team': pro_players[player_name]['team'],
+            'maps num': 0,
             'fantasy points': [],
             'points': [],
             'points details': [],
@@ -201,6 +202,7 @@ def compute_fantasy_points(event_data: dict, pro_players: dict, min_bound: int, 
             role = pro_players[player_name]['role']
             player_info = fantasy_points[role][player_name]
             player_info['points details'].append(points_details)
+            player_info['maps num'] += match['maps_num']
             match_multiplier = 1 if match['maps_num'] <= 2 else 2. / 3.
             for key, value in points_details.items():
                 player_info['points details sum'][key] = np.round(player_info['points details sum'].get(key, 0) + value * match_multiplier, 3)
@@ -220,18 +222,20 @@ def compute_fantasy_points(event_data: dict, pro_players: dict, min_bound: int, 
 def post_calculate_points(fantasy_points, pro_players):
     for role in fantasy_points.keys():
         for player_name, player_info in fantasy_points[role].items():
+            player_info['cost'] = pro_players[player_name]['cost']
             player_info['day points'] = np.round(np.sum(player_info['fantasy points']), 3)
+            player_info['points per cost'] = np.round(player_info['day points'] / pro_players[player_name]['cost'], 3)
             # player_info['mean points per match'] = np.round(np.mean(player_info['points']), 3)
 
             # player_info['mean per cost'] = np.round(player_info['mean points per match'] / pro_players[player_name]['cost'], 3)
-            player_info['match count'] = len(player_info['fantasy points'])
+            player_info['match num'] = len(player_info['fantasy points'])
 
 
 def dump_points_to_excel(writer, fantasy_points, sorting_key):
     for role in fantasy_points.keys():
         role_points = dict(sorted(fantasy_points[role].items(), key=lambda x: x[1][sorting_key], reverse=True))
         data = list()
-        main_columns = ['team', 'day points', 'match count']
+        main_columns = ['team', 'cost', 'day points', 'points per cost', 'match num', 'maps num']
         details_columns = ['kills', 'assists', 'flashes', 'deaths', 'fkdiff']
         for player_name, player_info in role_points.items():
             row = [player_name]
@@ -244,6 +248,7 @@ def dump_points_to_excel(writer, fantasy_points, sorting_key):
         columns = ['name'] + main_columns + details_columns
         df = pd.DataFrame(data, columns=columns)
         sf = StyleFrame(df)
+        sf.A_FACTOR = 6
         sf.to_excel(writer, sheet_name=role, best_fit=columns)
 
 
@@ -257,6 +262,7 @@ def dump_captains_to_excel(writer, fantasy_points):
     columns = ['name', 'points', 'role']
     df = pd.DataFrame(captains_info, columns=columns)
     sf = StyleFrame(df)
+    sf.A_FACTOR = 4
     sf.to_excel(writer, sheet_name='captains rating', best_fit=columns)
 
 
@@ -323,6 +329,7 @@ def dump_teams_rating_to_excel(writer, fantasy_points, pro_players, teams_count,
     if len(top_teams_data):
         top_teams_df = pd.DataFrame(top_teams_data, columns=columns)
         sf_top_teams_df = StyleFrame(top_teams_df)
+        sf_top_teams_df.A_FACTOR = 4
         sf_top_teams_df.to_excel(writer, sheet_name='Top teams', best_fit=columns)
 
     top_dream_teams_data = list()
@@ -335,6 +342,7 @@ def dump_teams_rating_to_excel(writer, fantasy_points, pro_players, teams_count,
 
     top_dream_teams_df = pd.DataFrame(top_dream_teams_data, columns=columns)
     sf_top_dream_teams_df = StyleFrame(top_dream_teams_df)
+    sf_top_dream_teams_df.A_FACTOR = 4
     sf_top_dream_teams_df.to_excel(writer, sheet_name='Top dream teams', best_fit=columns)
 
 
@@ -383,6 +391,9 @@ def postproc_overall_fantasy_points(fantasy_points: dict):
     for player_info in fantasy_points.values():
         player_info['mean points'] = np.round(np.mean(player_info['points']), 3)
         player_info['mean points per round'] = np.round(np.mean(player_info['points per round']), 3)
+        player_info['mean points per cost'] = 0
+        if 'cost' in player_info.keys():
+            player_info['mean points per cost'] = np.round(player_info['mean points'] / player_info['cost'], 3)
         player_info['min points'] = np.round(min(player_info['points']), 3)
         player_info['max points'] = np.round(max(player_info['points']), 3)
 
@@ -396,7 +407,7 @@ def postproc_overall_fantasy_points(fantasy_points: dict):
 def dump_overall_to_excel(writer, fantasy_points, sort_key):
     fantasy_points = dict(sorted(fantasy_points.items(), key=lambda x: x[1][sort_key], reverse=True))
     data = list()
-    main_columns = ['team', 'role', 'cost', 'mean points', 'mean points per round', 'min points', 'max points', 'maps points']
+    main_columns = ['team', 'role', 'cost', 'mean points', 'mean points per round', 'mean points per cost', 'min points', 'max points', 'maps points']
     for player_name, player_info in fantasy_points.items():
         row = [player_name]
         for column_name in main_columns:
@@ -409,6 +420,7 @@ def dump_overall_to_excel(writer, fantasy_points, sort_key):
     columns = ['name'] + main_columns
     df = pd.DataFrame(data, columns=columns)
     sf = StyleFrame(df)
+    sf.A_FACTOR = 4
     sf.apply_column_style(
         cols_to_style=['maps points'],
         styler_obj=Styler(font='Courier New', horizontal_alignment=utils.horizontal_alignments.left),
@@ -432,6 +444,9 @@ def dump_overall(excel_file_name: str, overall_fantasy_points: dict, pro_players
 
         dump_overall_to_excel(writer, overall_fantasy_points, 'mean points')
         dump_overall_to_excel(writer, overall_fantasy_points, 'mean points per round')
+        dump_overall_to_excel(writer, overall_fantasy_points, 'mean points per cost')
+
+        # dump_maps_perfomance_to_excel(writer, overall_fantasy_points, '')
 
         fantasy_points_by_role = {'rifler': {}, 'sniper': {}}
         for player_name in pro_players:
@@ -455,6 +470,8 @@ def dump_event(event_name: str, event_id: int, reload: bool, pro_players: dict, 
     overall_fantasy_points = compute_overall_fantasy_points(event_data)
     postproc_overall_fantasy_points(overall_fantasy_points)
     dump_overall(f'{output_path}/overall.xlsx', overall_fantasy_points, pro_players, 100)
+
+    print(f'dump: {event_name}')
 
     return overall_fantasy_points
 
@@ -516,13 +533,15 @@ def main():
         dump_event('blast-premier-spring-showdown-2024', 7553, False, pro_players, []),  # Mar 6th - Mar 10th 2024
 
         dump_event('pgl-cs2-major-copenhagen-2024-opening-stage', 7258, False, pro_players, [2370595, 2370611, 2370619, 2370625, 9999999999]),
-        dump_event('pgl-cs2-major-copenhagen-2024', 7148, False, pro_players, [2370628, 2370644, 2370652, 2370658, 2370721, 2370723, 2370725, 2370727, 9999999999])
+        dump_event('pgl-cs2-major-copenhagen-2024', 7148, True, pro_players, [2370628, 2370644, 2370652, 2370658, 2370721, 2370723, 2370725, 2370727, 9999999999])
     ]
 
     pro_players_actual = get_pro_players('pro_players_actual.json')
     dump_merged_overalls('overall', overalls, pro_players_actual)
-    dump_merged_overalls('overall_no_closed_qualifiers', overalls[6:], pro_players_actual)
+    dump_merged_overalls('overall_after_closed_qualifiers', overalls[6:], pro_players_actual)
     dump_merged_overalls('overall_after_katowice', overalls[9:], pro_players_actual)
+    dump_merged_overalls('overall_only_major', overalls[14:], pro_players_actual)
+    dump_merged_overalls('overall_only_major_2_stage', overalls[15:], pro_players_actual)
 
 
 if __name__ == '__main__':
