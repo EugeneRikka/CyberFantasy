@@ -513,6 +513,28 @@ def dump_merged_overalls(file_name:str, overalls: list[dict], pro_players: dict)
     dump_overall(f'{output_path}/{file_name}.xlsx', overall_fantasy_points, pro_players, 100)
 
 
+def count_valid_teams(pro_players_actual, riflers_names, snipers_names, max_cost):
+    teams_count = 0
+    for comb in itertools.combinations(riflers_names, 4):
+        for sniper_name in snipers_names:
+            cost = sum(pro_players_actual[player]['cost'] for player in comb) + pro_players_actual[sniper_name]['cost']
+            if cost <= max_cost:
+                teams_count += 1
+    return teams_count
+
+
+def print_balance_distribution():
+    pro_players_actual = get_pro_players('pro_players_day.json')
+
+    snipers_names = [player_name for player_name, player_data in pro_players_actual.items() if player_data['role'] == 'sniper']
+    riflers_names = [player_name for player_name, player_data in pro_players_actual.items() if player_data['role'] == 'rifler']
+    print(f'snipers count = {len(snipers_names)}')
+    print(f'riflers count = {len(riflers_names)}')
+    teams_count = sum(1 for _ in itertools.combinations(riflers_names, 4)) * len(snipers_names)
+    for balance in range(100, 200, 5):
+        teams_count_for_balance = count_valid_teams(pro_players_actual, riflers_names, snipers_names, balance)
+        print(f'{balance}: {teams_count_for_balance}/{teams_count} {round(1.0 * teams_count_for_balance / teams_count * 100, 3)}%')
+
 def main():
     pro_players = get_pro_players('pro_players.json')
 

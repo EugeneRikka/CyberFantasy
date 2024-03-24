@@ -1,0 +1,53 @@
+{
+  "chopper": {
+    "team": "Spirit",
+    "role": "rifler",
+    "cost": 15
+  },
+
+  "magixx": {
+    "team": "Spirit",
+    "role": "rifler",
+    "cost": 20
+  },
+  "zont1x": {
+    "team": "Spirit",
+    "role": "rifler",
+    "cost": 25
+  },
+  "donk": {
+    "team": "Spirit",
+    "role": "rifler",
+    "cost": 35
+  },
+  "sh1ro": {
+    "team": "Spirit",
+    "role": "sniper",
+    "cost": 35
+  },
+  "siuhy": {
+    "team": "Mouz",
+    "role": "rifler",
+    "cost": 15
+  },
+  "xertioN": {
+    "team": "Mouz",
+    "role": "rifler",
+    "cost": 20
+  },
+  "Jimpphat": {
+    "team": "Mouz",
+    "role": "rifler",
+    "cost": 25
+  },
+  "Brollan": {
+    "team": "Mouz",
+    "role": "rifler",
+    "cost": 25
+  },
+  "torzsi": {
+    "team": "Mouz",
+    "role": "sniper",
+    "cost": 25
+  }
+}

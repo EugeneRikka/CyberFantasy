@@ -1,14 +1,4 @@
 {
-  "JT": {
-    "team": "Complexity",
-    "role": "rifler",
-    "cost": 10
-  },
-  "Queenix": {
-    "team": "ECSTATIC",
-    "role": "rifler",
-    "cost": 10
-  },
   "MAJ3R": {
     "team": "Eternal Fire",
     "role": "rifler",
@@ -19,28 +9,8 @@
     "role": "rifler",
     "cost": 10
   },
-  "arT": {
-    "team": "Furia",
-    "role": "rifler",
-    "cost": 10
-  },
-  "chelo": {
-    "team": "Furia",
-    "role": "rifler",
-    "cost": 10
-  },
   "HooXi": {
     "team": "G2",
-    "role": "rifler",
-    "cost": 10
-  },
-  "kyxsan": {
-    "team": "Heroic",
-    "role": "rifler",
-    "cost": 10
-  },
-  "VINI": {
-    "team": "Imperial",
     "role": "rifler",
     "cost": 10
   },
@@ -49,68 +19,13 @@
     "role": "rifler",
     "cost": 10
   },
-  "n1ssim": {
-    "team": "paiN",
-    "role": "rifler",
-    "cost": 10
-  },
-  "910": {
-    "team": "TheMongolz",
-    "role": "sniper",
-    "cost": 10
-  },
-  "mzinho": {
-    "team": "TheMongolz",
-    "role": "rifler",
-    "cost": 10
-  },
-  "Grim": {
-    "team": "Complexity",
-    "role": "rifler",
-    "cost": 15
-  },
-  "Nodios": {
-    "team": "ECSTATIC",
-    "role": "rifler",
-    "cost": 15
-  },
-  "salazar": {
-    "team": "ECSTATIC",
-    "role": "sniper",
-    "cost": 15
-  },
-  "Patti": {
-    "team": "ECSTATIC",
-    "role": "rifler",
-    "cost": 15
-  },
   "Calyx": {
     "team": "Eternal Fire",
     "role": "rifler",
     "cost": 15
   },
-  "FalleN": {
-    "team": "Furia",
-    "role": "sniper",
-    "cost": 15
-  },
   "nexa": {
     "team": "G2",
-    "role": "rifler",
-    "cost": 15
-  },
-  "HEN1": {
-    "team": "Imperial",
-    "role": "sniper",
-    "cost": 15
-  },
-  "noway": {
-    "team": "Imperial",
-    "role": "rifler",
-    "cost": 15
-  },
-  "decenty": {
-    "team": "Imperial",
     "role": "rifler",
     "cost": 15
   },
@@ -119,38 +34,8 @@
     "role": "rifler",
     "cost": 15
   },
-  "biguzera": {
-    "team": "paiN",
-    "role": "rifler",
-    "cost": 15
-  },
-  "kauez": {
-    "team": "paiN",
-    "role": "rifler",
-    "cost": 15
-  },
-  "nqz": {
-    "team": "paiN",
-    "role": "sniper",
-    "cost": 15
-  },
   "chopper": {
     "team": "Spirit",
-    "role": "rifler",
-    "cost": 15
-  },
-  "Senzu": {
-    "team": "TheMongolz",
-    "role": "rifler",
-    "cost": 15
-  },
-  "Techno": {
-    "team": "TheMongolz",
-    "role": "rifler",
-    "cost": 15
-  },
-  "mir": {
-    "team": "Virtus.pro",
     "role": "rifler",
     "cost": 15
   },
@@ -169,21 +54,6 @@
     "role": "rifler",
     "cost": 20
   },
-  "floppy": {
-    "team": "Complexity",
-    "role": "rifler",
-    "cost": 20
-  },
-  "hallzerk": {
-    "team": "Complexity",
-    "role": "sniper",
-    "cost": 20
-  },
-  "kraghen": {
-    "team": "ECSTATIC",
-    "role": "rifler",
-    "cost": 20
-  },
   "Wicadia": {
     "team": "Eternal Fire",
     "role": "rifler",
@@ -199,33 +69,8 @@
     "role": "rifler",
     "cost": 20
   },
-  "yuurih": {
-    "team": "Furia",
-    "role": "rifler",
-    "cost": 20
-  },
   "huNter-": {
     "team": "G2",
-    "role": "rifler",
-    "cost": 20
-  },
-  "nicoodoz": {
-    "team": "Heroic",
-    "role": "sniper",
-    "cost": 20
-  },
-  "TeSeS": {
-    "team": "Heroic",
-    "role": "rifler",
-    "cost": 20
-  },
-  "sjuush": {
-    "team": "Heroic",
-    "role": "rifler",
-    "cost": 20
-  },
-  "felps": {
-    "team": "Imperial",
     "role": "rifler",
     "cost": 20
   },
@@ -234,28 +79,8 @@
     "role": "rifler",
     "cost": 20
   },
-  "lux": {
-    "team": "paiN",
-    "role": "rifler",
-    "cost": 20
-  },
   "magixx": {
     "team": "Spirit",
-    "role": "rifler",
-    "cost": 20
-  },
-  "bLitz": {
-    "team": "TheMongolz",
-    "role": "rifler",
-    "cost": 20
-  },
-  "fame": {
-    "team": "Virtus.pro",
-    "role": "rifler",
-    "cost": 20
-  },
-  "n0rb3r7": {
-    "team": "Virtus.pro",
     "role": "rifler",
     "cost": 20
   },
@@ -271,16 +96,6 @@
   },
   "Ax1Le": {
     "team": "Cloud9",
-    "role": "rifler",
-    "cost": 25
-  },
-  "EliGE": {
-    "team": "Complexity",
-    "role": "rifler",
-    "cost": 25
-  },
-  "KSCERATO": {
-    "team": "Furia",
     "role": "rifler",
     "cost": 25
   },
@@ -319,11 +134,6 @@
     "role": "rifler",
     "cost": 25
   },
-  "FL1T": {
-    "team": "Virtus.pro",
-    "role": "rifler",
-    "cost": 25
-  },
   "flameZ": {
     "team": "Vitality",
     "role": "rifler",
@@ -349,19 +159,9 @@
     "role": "sniper",
     "cost": 30
   },
-  "NertZ": {
-    "team": "Heroic",
-    "role": "rifler",
-    "cost": 30
-  },
   "b1t": {
     "team": "NAVI",
     "role": "rifler",
-    "cost": 30
-  },
-  "Jame": {
-    "team": "Virtus.pro",
-    "role": "sniper",
     "cost": 30
   },
   "Spinx": {
