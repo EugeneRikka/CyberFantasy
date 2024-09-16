@@ -9,6 +9,8 @@ from bs4 import BeautifulSoup
 from selenium_stealth import stealth
 import undetected_chromedriver as uc
 from styleframe import StyleFrame, Styler, utils
+import multiprocessing
+import concurrent.futures
 
 HLTV_URL = 'https://www.hltv.org'
 
@@ -16,8 +18,10 @@ HLTV_URL = 'https://www.hltv.org'
 def get_selenium_driver() -> uc.Chrome:
     options = uc.ChromeOptions()
     options.add_argument('--headless=new')
-    options.add_argument("--disable-gpu")
-    driver = uc.Chrome(options=options, no_sandbox=False, user_multi_procs=True, use_subprocess=False)
+    options.add_argument('--disable-gpu')
+    options.add_argument('--disable-renderer-backgrounding')
+    driver_executable_path = f'{Path.home()}/appdata/roaming/undetected_chromedriver/undetected_chromedriver.exe'
+    driver = uc.Chrome(driver_executable_path=driver_executable_path, options=options, no_sandbox=False, user_multi_procs=False, use_subprocess=False)
     stealth(
         driver,
         languages=['en-US', 'en'],
@@ -32,7 +36,8 @@ def get_page(url: str) -> BeautifulSoup:
     print(f'load: {url}')
     driver = get_selenium_driver()
     driver.get(url)
-    soup = BeautifulSoup(markup=driver.page_source, features='html.parser')
+    soup = BeautifulSoup(markup=driver.page_source, features='lxml')
+    driver.close()
     driver.quit()
 
     return soup
@@ -48,7 +53,7 @@ def get_soup(base_url: str, url: str, reload: bool = False) -> BeautifulSoup:
     else:
         with open(cache_file_path, 'r', encoding='utf-8') as file:
             page_source = file.read()
-            soup = BeautifulSoup(markup=page_source, features='html.parser')
+            soup = BeautifulSoup(markup=page_source, features='lxml')
 
     return soup
 
@@ -56,10 +61,11 @@ def get_soup(base_url: str, url: str, reload: bool = False) -> BeautifulSoup:
 def get_matches(event_id: int, reload: bool):
     event_soup = get_soup(HLTV_URL, f'/results?event={event_id}', reload)
     matches = []
-    for match_div in event_soup.find_all('div', 'result-con'):
-        url = match_div.find('a').get('href')
-        match_data = {'url': url, 'id': int(url.split('/')[2])}
-        matches.append(match_data)
+    for day_div in event_soup.find_all('div', 'results-sublist'):
+        for match_div in day_div.find_all('div', 'result-con'):
+            url = match_div.find('a').get('href')
+            match_data = {'url': url, 'id': int(url.split('/')[2]), 'day': day_div.find('div', 'standard-headline').text}
+            matches.append(match_data)
 
     return sorted(matches, key=lambda x: x['url'])
 
@@ -93,9 +99,15 @@ def get_map_stats(details_soup: BeautifulSoup) -> dict:
     return map_stats
 
 
-def parse_match(match: dict):
+def parse_match(match: dict) -> bool:
     match_soup = get_soup(HLTV_URL, match['url'])
-    match['details_url'] = match_soup.find('div', 'stats-detailed-stats').find('a').get('href')
+    detailed_stats_div = match_soup.find('div', 'stats-detailed-stats')
+    if detailed_stats_div is None:
+        print(f'filtered: {match["url"]}')
+        return False
+
+    match['details_url'] = detailed_stats_div.find('a').get('href')
+
     details_soup = get_soup(HLTV_URL, match['details_url'])
 
     match['total'] = get_map_stats(details_soup)
@@ -111,13 +123,22 @@ def parse_match(match: dict):
 
     match['maps_num'] = len(match['maps'])
 
+    return True
+
 
 def parse_event(event_id: int, reload: bool) -> dict:
-    matches = get_matches(event_id, reload)
-    for match in matches:
-        parse_match(match)
+    # matches = get_matches(event_id, reload)
+    # approved_matches = []
+    # for match in matches:
+    #     if parse_match(match):
+    #         approved_matches.append(match)
+    #
+    # return {'matches': approved_matches}
 
-    return {'matches': matches}
+    matches = get_matches(event_id, reload)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        results = list(executor.map(parse_match, matches))
+        return {'matches': [match for match, approved in zip(matches, results) if approved]}
 
 
 def get_event_data(event_id: int, reload: bool):
@@ -182,33 +203,36 @@ def create_fantasy_points_template(pro_players):
 
 def calculate_map_points(player_stat: dict, maps_num: int):
     return {
-        'kills': player_stat['kills'],
-        'assists': (player_stat['assists'] - player_stat['flashes']) * 0.6,
-        'flashes': player_stat['flashes'] * 0.2,
-        'deaths': (12 * maps_num - player_stat['deaths']) * 0.6,
-        'fkdiff': 0 if player_stat['fkdiff'] < 0 else player_stat['fkdiff'] * 0.75
+        'kills': player_stat['kills'] * 2,
+        'assists': (player_stat['assists'] - player_stat['flashes']) * 1.2,
+        'flashes': player_stat['flashes'] * 0.4,
+        'deaths': (12 * maps_num - player_stat['deaths']) * 1.2,
+        'fkdiff': 0 if player_stat['fkdiff'] < 0 else player_stat['fkdiff'] * 1.5
     }
 
 
-def compute_fantasy_points(event_data: dict, pro_players: dict, min_bound: int, max_bound: int) -> dict:
+def compute_fantasy_points(event_data: dict, pro_players: dict, day: str) -> dict:
     fantasy_points = create_fantasy_points_template(pro_players)
     for match in event_data['matches']:
-        if not min_bound <= match['id'] < max_bound:
+        if match['day'] != day:
             continue
 
         for player_name, player_stat in match['total']['players'].items():
             points_details = calculate_map_points(player_stat, match['maps_num'])
+            points_details['fkdiff'] = 0
+            for map_info in match['maps']:
+                fk_diff = map_info['players'][player_name]['fkdiff']
+                points_details['fkdiff'] += 0 if fk_diff < 0 else fk_diff * 1.5
 
             role = pro_players[player_name]['role']
             player_info = fantasy_points[role][player_name]
             player_info['points details'].append(points_details)
             player_info['maps num'] += match['maps_num']
-            match_multiplier = 1 if match['maps_num'] <= 2 else 2. / 3.
             for key, value in points_details.items():
-                player_info['points details sum'][key] = np.round(player_info['points details sum'].get(key, 0) + value * match_multiplier, 3)
+                player_info['points details sum'][key] = np.round(player_info['points details sum'].get(key, 0) + value / match['maps_num'], 3)
 
             points_sum = sum(points_details.values())
-            player_info['fantasy points'].append(np.round(points_sum * match_multiplier, 3))
+            player_info['fantasy points'].append(np.round(points_sum / match['maps_num'], 3))
             player_info['points'].append(np.round(points_sum, 3))
 
     for role in fantasy_points.keys():
@@ -223,11 +247,8 @@ def post_calculate_points(fantasy_points, pro_players):
     for role in fantasy_points.keys():
         for player_name, player_info in fantasy_points[role].items():
             player_info['cost'] = pro_players[player_name]['cost']
-            player_info['day points'] = np.round(np.sum(player_info['fantasy points']), 3)
-            player_info['points per cost'] = np.round(player_info['day points'] / pro_players[player_name]['cost'], 3)
-            # player_info['mean points per match'] = np.round(np.mean(player_info['points']), 3)
-
-            # player_info['mean per cost'] = np.round(player_info['mean points per match'] / pro_players[player_name]['cost'], 3)
+            player_info['total points'] = np.round(np.sum(player_info['fantasy points']), 3)
+            player_info['points per cost'] = np.round(player_info['total points'] / pro_players[player_name]['cost'], 3)
             player_info['match num'] = len(player_info['fantasy points'])
 
 
@@ -235,7 +256,7 @@ def dump_points_to_excel(writer, fantasy_points, sorting_key):
     for role in fantasy_points.keys():
         role_points = dict(sorted(fantasy_points[role].items(), key=lambda x: x[1][sorting_key], reverse=True))
         data = list()
-        main_columns = ['team', 'cost', 'day points', 'points per cost', 'match num', 'maps num']
+        main_columns = ['team', 'cost', 'total points', 'points per cost', 'match num', 'maps num']
         details_columns = ['kills', 'assists', 'flashes', 'deaths', 'fkdiff']
         for player_name, player_info in role_points.items():
             row = [player_name]
@@ -256,7 +277,7 @@ def dump_captains_to_excel(writer, fantasy_points):
     captains_info = []
     for role in fantasy_points.keys():
         for player_name, player_info in fantasy_points[role].items():
-            captains_info.append([player_name, player_info['day points'] * 2, role])
+            captains_info.append([player_name, player_info['total points'] * 2, role])
     captains_info = sorted(captains_info, key=lambda x: x[1], reverse=True)
 
     columns = ['name', 'points', 'role']
@@ -300,23 +321,18 @@ def generate_teams(fantasy_points, pro_players, teams_count, balance, sort_key):
 
             for captain_name in team_names:
                 team_info = calculate_team_points(players_points, pro_players, team_names, captain_name)
-
-                if len(dream_teams_rating) < teams_count:
-                    dream_teams_rating.append(team_info)
-
+                dream_teams_rating.append(team_info)
                 if team_info['cost'] <= balance:
                     teams_rating.append(team_info)
-                    if len(teams_rating) == teams_count:
-                        return [dream_teams_rating, teams_rating]
 
-    return [dream_teams_rating, teams_rating]
+    teams_rating = sorted(teams_rating, key=lambda x: x['points'], reverse=True)
+    dream_teams_rating = sorted(dream_teams_rating, key=lambda x: x['points'], reverse=True)
+    return [dream_teams_rating[:teams_count], teams_rating[:teams_count]]
 
 
 def dump_teams_rating_to_excel(writer, fantasy_points, pro_players, teams_count, balance, sort_key):
     dream_teams_rating, teams_rating = generate_teams(fantasy_points, pro_players, teams_count, balance, sort_key)
 
-    teams_rating = sorted(teams_rating, key=lambda x: x['points'], reverse=True)
-    dream_teams_rating = sorted(dream_teams_rating, key=lambda x: x['points'], reverse=True)
     columns = ['sniper', 'rifler1', 'rifler2', 'rifler3', 'rifler4', 'cost', 'points']
     top_teams_data = list()
     for team_info in teams_rating:
@@ -346,8 +362,8 @@ def dump_teams_rating_to_excel(writer, fantasy_points, pro_players, teams_count,
     sf_top_dream_teams_df.to_excel(writer, sheet_name='Top dream teams', best_fit=columns)
 
 
-def calculate_fantasy_points(pro_players: dict, event_data: dict, min_bound: int, max_bound: int) -> dict:
-    fantasy_points = compute_fantasy_points(event_data, pro_players, min_bound=min_bound, max_bound=max_bound)
+def calculate_fantasy_points(pro_players: dict, event_data: dict, day: str) -> dict:
+    fantasy_points = compute_fantasy_points(event_data, pro_players, day)
     post_calculate_points(fantasy_points, pro_players)
     return fantasy_points
 
@@ -357,11 +373,16 @@ def compute_overall_fantasy_points(event_data: dict) -> dict:
     for match in event_data['matches']:
         for map_stat in match['maps']:
             for player_index, [player_name, player_stat] in enumerate(map_stat['players'].items()):
+                is_team1 = player_index < 5
                 if player_name not in fantasy_points:
                     fantasy_points[player_name] = {
-                        'team': map_stat['team1_name'] if player_index < 5 else map_stat['team2_name'],
+                        'team': map_stat['team1_name'] if is_team1 else map_stat['team2_name'],
                         'points': [],
                         'points per round': [],
+                        'wins': [],
+                        'wins count': 0,
+                        'loses count': 0,
+                        'rounds won': [],
                         'maps points': '',
                         'maps': {}
                     }
@@ -369,20 +390,32 @@ def compute_overall_fantasy_points(event_data: dict) -> dict:
 
                 points_details = calculate_map_points(player_stat, 1)
                 points_sum = round(sum(points_details.values()), 3)
+                is_win = (map_stat['team1_rounds'] > map_stat['team2_rounds']) == is_team1
+                rounds_won = (map_stat['team1_rounds'] if is_team1 else map_stat['team2_rounds']) / map_stat['rounds'] * 100
                 player_info['points'].append(points_sum)
                 player_info['points per round'].append(round(points_sum / map_stat['rounds'], 3))
+                player_info['wins'].append(is_win)
+                player_info['wins count' if is_win else 'loses count'] += 1
+                player_info['rounds won'].append(rounds_won)
                 player_info['maps points'] += '{0: <7}'.format(points_sum)
 
-                if map_stat['name'] not in player_info:
+                if map_stat['name'] not in player_info['maps']:
                     player_info['maps'][map_stat['name']] = {
                         'points': [],
                         'points per round': [],
+                        'wins': [],
+                        'wins count': 0,
+                        'loses count': 0,
+                        'rounds won': [],
                         'map points': ''
                     }
 
                 map_info = player_info['maps'][map_stat['name']]
                 map_info['points'].append(points_sum)
                 map_info['points per round'].append(round(points_sum / map_stat['rounds'], 3))
+                map_info['wins'].append(is_win)
+                map_info['wins count' if is_win else 'loses count'] += 1
+                map_info['rounds won'].append(rounds_won)
                 map_info['map points'] += '{0: <7}'.format(points_sum)
     return fantasy_points
 
@@ -390,24 +423,49 @@ def compute_overall_fantasy_points(event_data: dict) -> dict:
 def postproc_overall_fantasy_points(fantasy_points: dict):
     for player_info in fantasy_points.values():
         player_info['mean points'] = np.round(np.mean(player_info['points']), 3)
+        player_info['mean points per win'] = 0
+        player_info['mean points per lose'] = 0
+        for i, points in enumerate(player_info['points']):
+            if player_info['wins'][i]:
+                player_info['mean points per win'] += np.round(points / player_info['wins count'], 3)
+            else:
+                player_info['mean points per lose'] += np.round(points / player_info['loses count'], 3)
+        player_info['winrate'] = f'{np.round(player_info['wins count'] / len(player_info['points']) * 100, 1)}%'
         player_info['mean points per round'] = np.round(np.mean(player_info['points per round']), 3)
         player_info['mean points per cost'] = 0
         if 'cost' in player_info.keys():
             player_info['mean points per cost'] = np.round(player_info['mean points'] / player_info['cost'], 3)
         player_info['min points'] = np.round(min(player_info['points']), 3)
         player_info['max points'] = np.round(max(player_info['points']), 3)
+        player_info['rounds winrate'] = f'{np.round(np.mean(player_info['rounds won']), 1)}%'
 
+        mean_points = []
         for map_name, map_info in player_info['maps'].items():
             map_info['mean points'] = np.round(np.mean(map_info['points']), 3)
+            map_info['mean points per win'] = 0
+            map_info['mean points per lose'] = 0
+            for i, points in enumerate(map_info['points']):
+                if map_info['wins'][i]:
+                    map_info['mean points per win'] += np.round(points / map_info['wins count'], 3)
+                else:
+                    map_info['mean points per lose'] += np.round(points / map_info['loses count'], 3)
+            map_info['winrate'] = f'{np.round(map_info['wins count'] / len(map_info['points']) * 100, 1)}%'
             map_info['mean points per round'] = np.round(np.mean(map_info['points per round']), 3)
+            map_info['min points'] = np.round(min(map_info['points']), 3)
+            map_info['max points'] = np.round(max(map_info['points']), 3)
+            map_info['rounds winrate'] = f'{np.round(np.mean(map_info['rounds won']), 1)}%'
+            mean_points.append((map_name, map_info['mean points']))
 
-    # print(fantasy_points)
+        mean_points.sort(key=lambda x: x[1], reverse=True)
+        map_ratings = {map_name: rank + 1 for rank, (map_name, _) in enumerate(mean_points)}
+        for map_name in player_info['maps']:
+            player_info['maps'][map_name]['map rating'] = map_ratings[map_name]
 
 
 def dump_overall_to_excel(writer, fantasy_points, sort_key):
     fantasy_points = dict(sorted(fantasy_points.items(), key=lambda x: x[1][sort_key], reverse=True))
     data = list()
-    main_columns = ['team', 'role', 'cost', 'mean points', 'mean points per round', 'mean points per cost', 'min points', 'max points', 'maps points']
+    main_columns = ['team', 'role', 'cost', 'mean points', 'mean points per win', 'mean points per lose', 'winrate', 'mean points per round', 'mean points per cost', 'min points', 'max points', 'rounds winrate', 'maps points']
     for player_name, player_info in fantasy_points.items():
         row = [player_name]
         for column_name in main_columns:
@@ -428,11 +486,39 @@ def dump_overall_to_excel(writer, fantasy_points, sort_key):
     sf.to_excel(writer, sheet_name=f'{sort_key}', best_fit=columns)
 
 
-def dump_day(excel_file_name: str, pro_players: dict, fantasy_points: dict, sort_key: str, balance: int):
-    with pd.ExcelWriter(excel_file_name) as writer:
-        dump_points_to_excel(writer, fantasy_points, sort_key)
-        dump_captains_to_excel(writer, fantasy_points)
-        dump_teams_rating_to_excel(writer, fantasy_points, pro_players, 1000, balance, 'day points')
+def dump_maps_perfomance_to_excel(writer, fantasy_points):
+    maps_data = {}
+    main_columns = ['team', 'role', 'cost']
+    map_columns = ['map rating', 'mean points', 'mean points per win', 'mean points per lose', 'winrate', 'mean points per round', 'min points', 'max points', 'rounds winrate', 'map points']
+    for player_name, player_info in fantasy_points.items():
+        for map_name, map_info in player_info['maps'].items():
+            if map_name not in maps_data:
+                maps_data[map_name] = []
+
+            row = [player_name]
+            for column_name in main_columns:
+                if column_name in player_info.keys():
+                    row.append(player_info[column_name])
+                else:
+                    row.append('')
+
+            for column_name in map_columns:
+                row.append(map_info[column_name])
+
+            maps_data[map_name].append(row)
+
+    maps_data = dict(sorted(maps_data.items()))
+    columns = ['name'] + main_columns + map_columns
+    for map_name, map_data in maps_data.items():
+        map_data = sorted(map_data, key=lambda x: x[5], reverse=True)
+        df = pd.DataFrame(map_data, columns=columns)
+        sf = StyleFrame(df)
+        sf.A_FACTOR = 4
+        sf.apply_column_style(
+            cols_to_style=['map points'],
+            styler_obj=Styler(font='Courier New', horizontal_alignment=utils.horizontal_alignments.left),
+        )
+        sf.to_excel(writer, sheet_name=map_name, best_fit=columns)
 
 
 def dump_overall(excel_file_name: str, overall_fantasy_points: dict, pro_players: dict, balance: int):
@@ -443,10 +529,10 @@ def dump_overall(excel_file_name: str, overall_fantasy_points: dict, pro_players
                 player_stat['cost'] = pro_players[player_name]['cost']
 
         dump_overall_to_excel(writer, overall_fantasy_points, 'mean points')
-        dump_overall_to_excel(writer, overall_fantasy_points, 'mean points per round')
-        dump_overall_to_excel(writer, overall_fantasy_points, 'mean points per cost')
+        dump_overall_to_excel(writer, overall_fantasy_points, 'mean points per win')
+        dump_overall_to_excel(writer, overall_fantasy_points, 'mean points per lose')
 
-        # dump_maps_perfomance_to_excel(writer, overall_fantasy_points, '')
+        dump_maps_perfomance_to_excel(writer, overall_fantasy_points)
 
         fantasy_points_by_role = {'rifler': {}, 'sniper': {}}
         for player_name in pro_players:
@@ -454,24 +540,43 @@ def dump_overall(excel_file_name: str, overall_fantasy_points: dict, pro_players
                 role = pro_players[player_name]['role']
                 fantasy_points_by_role[role][player_name] = overall_fantasy_points[player_name]
 
-        dump_teams_rating_to_excel(writer, fantasy_points_by_role, pro_players, 1000, balance, 'mean points per round')
+        if balance:
+            dump_teams_rating_to_excel(writer, fantasy_points_by_role, pro_players, 1000, balance, 'mean points')
 
 
-def dump_event(event_name: str, event_id: int, reload: bool, pro_players: dict, days_bounds: list) -> dict:
+def dump_day(excel_file_name: str, pro_players: dict, fantasy_points: dict, sort_key: str, balance: int):
+    with pd.ExcelWriter(excel_file_name) as writer:
+        dump_points_to_excel(writer, fantasy_points, sort_key)
+        dump_captains_to_excel(writer, fantasy_points)
+        dump_teams_rating_to_excel(writer, fantasy_points, pro_players, 1000, balance, 'total points')
+
+
+def dump_event(event_name: str, event_id: int, reload: bool, pro_players: dict, balance: int = 100, re_dump: bool = False, dump_days: bool = False, last_day_only: bool = False) -> dict:
+    print(event_name)
     event_data = get_event_data(event_id, reload)
 
-    Path('cs2_fantasy').mkdir(parents=True, exist_ok=True)
     output_path = f'cs2_fantasy/{event_name}'
-    Path(output_path).mkdir(parents=True, exist_ok=True)
-    for day_num in range(1, len(days_bounds)):
-        fantasy_points = calculate_fantasy_points(pro_players, event_data, days_bounds[day_num - 1], days_bounds[day_num])
-        dump_day(f'{output_path}/day{day_num}.xlsx', pro_players, fantasy_points, 'day points', 100)
+    if re_dump:
+        Path('cs2_fantasy').mkdir(parents=True, exist_ok=True)
+        Path(output_path).mkdir(parents=True, exist_ok=True)
+
+    if dump_days and re_dump:
+        unique_days = set()
+        for match in event_data['matches']:
+            unique_days.add(match['day'])
+        unique_days = sorted(list(unique_days))
+        if last_day_only:
+            unique_days = [list(unique_days)[-1]]
+
+        for day in unique_days:
+            fantasy_points = calculate_fantasy_points(pro_players, event_data, day)
+            dump_day(f'{output_path}/{day}.xlsx', pro_players, fantasy_points, 'total points', balance)
 
     overall_fantasy_points = compute_overall_fantasy_points(event_data)
     postproc_overall_fantasy_points(overall_fantasy_points)
-    dump_overall(f'{output_path}/overall.xlsx', overall_fantasy_points, pro_players, 100)
-
-    print(f'dump: {event_name}')
+    if re_dump:
+        dump_overall(f'{output_path}/overall.xlsx', overall_fantasy_points, pro_players, 0)
+        print(f'dump: {event_name}')
 
     return overall_fantasy_points
 
@@ -486,7 +591,7 @@ def merge_dicts(dict1, dict2, excluded_keys):
                 if key not in excluded_keys:
                     merged_dict[key] = dict1[key] + dict2[key]
                 else:
-                    merged_dict[key] = dict1[key]
+                    merged_dict[key] = dict2[key]
         elif key in dict1:
             merged_dict[key] = dict1[key]
         else:
@@ -502,7 +607,7 @@ def merge_overalls(overalls: list[dict]) -> dict:
     return overall_fantasy_points
 
 
-def dump_merged_overalls(file_name:str, overalls: list[dict], pro_players: dict):
+def dump_merged_overalls(file_name: str, overalls: list[dict], pro_players: dict, balance: int) -> dict:
     output_path = f'cs2_fantasy'
     Path(output_path).mkdir(parents=True, exist_ok=True)
 
@@ -510,7 +615,9 @@ def dump_merged_overalls(file_name:str, overalls: list[dict], pro_players: dict)
     overall_fantasy_points = {key: value for key, value in overall_fantasy_points.items() if key in pro_players}
 
     postproc_overall_fantasy_points(overall_fantasy_points)
-    dump_overall(f'{output_path}/{file_name}.xlsx', overall_fantasy_points, pro_players, 100)
+    dump_overall(f'{output_path}/{file_name}.xlsx', overall_fantasy_points, pro_players, balance)
+
+    return overall_fantasy_points
 
 
 def count_valid_teams(pro_players_actual, riflers_names, snipers_names, max_cost):
@@ -535,36 +642,111 @@ def print_balance_distribution():
         teams_count_for_balance = count_valid_teams(pro_players_actual, riflers_names, snipers_names, balance)
         print(f'{balance}: {teams_count_for_balance}/{teams_count} {round(1.0 * teams_count_for_balance / teams_count * 100, 3)}%')
 
+
+def print_cost_distribution():
+    pro_players_actual = get_pro_players('pro_players_actual.json')
+    costs_distribution = {10: 0, 15: 0, 20: 0, 25: 0, 30: 0, 35: 0}
+    for player_name in pro_players_actual:
+        cost = pro_players_actual[player_name]['cost']
+        costs_distribution[cost] = costs_distribution[cost] + 1
+    print(costs_distribution)
+
+
+def calculate_predict_points_for_map(result_points: dict, pro_players: dict, players: list, fantasy_points: dict, match: dict, win_points_key: str, lose_points_key: str):
+    for player_name in players:
+        player_role = pro_players[player_name]['role']
+        if player_name not in result_points[player_role].keys():
+            result_points[player_role][player_name] = {'points': 0}
+        for map_index, map_result in enumerate(match['wins']):
+            map_name = match['maps'][map_index]
+            map_info = fantasy_points[player_name]['maps'][map_name]
+            result_points[player_role][player_name]['points'] += map_info[win_points_key if map_result else lose_points_key] / len(match['wins'])
+
+
+def print_predict(fantasy_points: dict, pro_players: dict, matches: list, balance: int):
+    print('')
+    result_points = {'rifler': {}, 'sniper': {}}
+    for match in matches:
+        team1_players = [player_name for player_name, player_info in pro_players.items() if player_info['team'] == match['team1_name']]
+        calculate_predict_points_for_map(result_points, pro_players, team1_players, fantasy_points, match, 'mean points per win', 'mean points per lose')
+        team2_players = [player_name for player_name, player_info in pro_players.items() if player_info['team'] == match['team2_name']]
+        calculate_predict_points_for_map(result_points, pro_players, team2_players, fantasy_points, match, 'mean points per lose', 'mean points per win')
+
+        for map_index, map_result in enumerate(match['wins']):
+            map_name = match['maps'][map_index]
+            print(f'{map_name} - {match['team1_name'] if map_result else match['team2_name']} won')
+
+    print('')
+    dream_teams_rating, teams_rating = generate_teams(result_points, pro_players, 20, balance, 'points')
+    for role, role_info in result_points.items():
+        print(role)
+        role_info = dict(sorted(role_info.items(), key=lambda x: x[1]['points'], reverse=True))
+        for player_name, player_info in role_info.items():
+            print(f'{player_name} {player_info['points']:.3f}')
+        print('')
+
+    for team in teams_rating:
+        print(f'{team['sniper']}\t{team['rifler1']}\t{team['rifler2']}\t{team['rifler3']}\t{team['rifler4']}\t{team['cost']}\t{team['points']:.3f}')
+
+
 def main():
     pro_players = get_pro_players('pro_players.json')
 
     overalls = [
-        dump_event('pgl-cs2-major-copenhagen-2024-na-rmr-closed-qualifier', 7409, False, pro_players, []),  # Jan 12th - Jan 14th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-closed-qualifier-a', 7392, False, pro_players, []),  # Jan 18th - Jan 20th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-closed-qualifier-b', 7619, False, pro_players, []),  # Jan 18th - Jan 20th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-east-asia-rmr-closed-qualifier', 7399, False, pro_players, []),  # Jan 19th - Jan 21st 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-sa-rmr-closed-qualifier', 7410, False, pro_players, []),  # Jan 19th - Jan 21st 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-decider-qualifier', 7391, False, pro_players, []),  # Jan 21st 2024
-        dump_event('blast-premier-spring-groups-2024', 7552, False, pro_players, []),  # Jan 22nd - Jan 28th 2024
-        dump_event('iem-katowice-2024-play-in', 7551, False, pro_players, []),  # Jan 31st - Feb 2nd 2024
-        dump_event('iem-katowice-2024', 7435, False, pro_players, []),  # Feb 3rd - Feb 11th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-a', 7259, False, pro_players, []),  # Feb 14th - Feb 17th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-b', 7577, False, pro_players, []),  # Feb 19th - Feb 22nd 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-asia-rmr', 7260, False, pro_players, []),  # Feb 26th - Feb 28th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-americas-rmr', 7261, False, pro_players, []),  # Mar 1st - Mar 4th 2024
-        dump_event('blast-premier-spring-showdown-2024', 7553, False, pro_players, []),  # Mar 6th - Mar 10th 2024
+        dump_event('betboom-dacha-2023', 7499, False, pro_players),  # Dec 5th - Dec 10th 2023
+        dump_event('pgl-cs2-major-copenhagen-2024-na-rmr-closed-qualifier', 7409, False, pro_players),  # Jan 12th - Jan 14th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-closed-qualifier-a', 7392, False, pro_players),  # Jan 18th - Jan 20th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-closed-qualifier-b', 7619, False, pro_players),  # Jan 18th - Jan 20th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-east-asia-rmr-closed-qualifier', 7399, False, pro_players),  # Jan 19th - Jan 21st 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-sa-rmr-closed-qualifier', 7410, False, pro_players),  # Jan 19th - Jan 21st 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-decider-qualifier', 7391, False, pro_players),  # Jan 21st 2024
+        dump_event('blast-premier-spring-groups-2024', 7552, False, pro_players),  # Jan 22nd - Jan 28th 2024
+        dump_event('iem-katowice-2024-play-in', 7551, False, pro_players),  # Jan 31st - Feb 2nd 2024
+        dump_event('iem-katowice-2024', 7435, False, pro_players),  # Feb 3rd - Feb 11th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-a', 7259, False, pro_players),  # Feb 14th - Feb 17th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-b', 7577, False, pro_players),  # Feb 19th - Feb 22nd 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-asia-rmr', 7260, False, pro_players),  # Feb 26th - Feb 28th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-americas-rmr', 7261, False, pro_players),  # Mar 1st - Mar 4th 2024
+        dump_event('blast-premier-spring-showdown-2024', 7553, False, pro_players),  # Mar 6th - Mar 10th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024-opening-stage', 7258, False, pro_players),  # Mar 17th - Mar 20th 2024
+        dump_event('pgl-cs2-major-copenhagen-2024', 7148, False, pro_players),  # Mar 21st - Mar 31st 2024
+        dump_event('betboom-dacha-belgrade-2024-south-america-closed-qualifier', 7771, False, pro_players),  # Apr 4th - Apr 11th 2024
+        dump_event('betboom-dacha-belgrade-2024-europe-closed-qualifier', 7757, False, pro_players),  # Apr 2nd - Apr 12th 2024
+        dump_event('iem-chengdu-2024', 7437, False, pro_players),  # Apr 8th - Apr 14th 2024
+        dump_event('skyesports-masters-2024', 7711, False, pro_players),  # Apr 8th - Apr 14th 2024
+        dump_event('global-esports-tour-rio-2024', 7742, False, pro_players),  # Apr 18th - Apr 20th 2024
+        dump_event('esl-challenger-melbourne-2024', 7600, False, pro_players),  # Apr 26th - Apr 28th 2024
+        dump_event('cct-season-2-europe-series-1', 7781, False, pro_players),  # Apr 21st - May 4th 2024
+        dump_event('cct-season-2-europe-series-2', 7795, False, pro_players),  # Apr 29th - May 12th 2024
+        dump_event('esl-pro-league-season-19', 7440, False, pro_players),  # Apr 23rd - May 12th 2024
+        dump_event('betboom-dacha-belgrade-2024', 7755, False, pro_players),  # May 14th - May 19th 2024
+        dump_event('iem-dallas-2024', 7438, False, pro_players),  # May 27th - Jun 2nd 2024
+        dump_event('blast-premier-spring-final-2024', 7485, False, pro_players),  # Jun 12th - Jun 16th 2024
 
-        dump_event('pgl-cs2-major-copenhagen-2024-opening-stage', 7258, False, pro_players, [2370595, 2370611, 2370619, 2370625, 9999999999]),
-        dump_event('pgl-cs2-major-copenhagen-2024', 7148, True, pro_players, [2370628, 2370644, 2370652, 2370658, 2370721, 2370723, 2370725, 2370727, 9999999999])
+        dump_event('cct-season-2-europe-series-6', 7899, False, pro_players),  # Jul 15th - Jul 28th 2024
+        dump_event('cct-season-2-south-america-series-2', 7948, False, pro_players),  # Jul 15th - Aug 2nd 2024
+        dump_event('esports-world-cup-2024', 7732, False, pro_players),  # Jul 17th - Jul 21st 2024
+        dump_event('skyesports-championship-2024', 7847, False, pro_players),  # Jul 23rd - Jul 28th 2024
+        dump_event('betboom-dacha-belgrade-season-2-south-america-closed-qualifier', 7994, False, pro_players),  # Jul 28th - Aug 3rd 2024
+        dump_event('betboom-dacha-belgrade-season-2-europe-closed-qualifier', 7992, False, pro_players),  # Jul 28th - Aug 5th 2024
+        dump_event('blast-premier-fall-groups-2024', 7554, False, pro_players),  # Jul 29th - Aug 4th 2024
+        dump_event('iem-cologne-2024-play-in', 7675, False, pro_players),  # Aug 7th - Aug 9th 2024
+        dump_event('iem-cologne-2024', 7436, True, pro_players, 110, True, True, True)  # Aug 10th - Aug 18th 2024
     ]
 
-    pro_players_actual = get_pro_players('pro_players_actual.json')
-    dump_merged_overalls('overall', overalls, pro_players_actual)
-    dump_merged_overalls('overall_after_closed_qualifiers', overalls[6:], pro_players_actual)
-    dump_merged_overalls('overall_after_katowice', overalls[9:], pro_players_actual)
-    dump_merged_overalls('overall_only_major', overalls[14:], pro_players_actual)
-    dump_merged_overalls('overall_only_major_2_stage', overalls[15:], pro_players_actual)
+    overall_fantasy_points = dump_merged_overalls('overall', overalls, pro_players, 0)
+    dump_merged_overalls('overall_post_july', overalls[-9:], pro_players, 0)
+    dump_merged_overalls('overall_cologne', overalls[-2:], pro_players, 0)
 
+    next_day_balance = 110
+    pro_players_day = get_pro_players('pro_players_day.json')
+    dump_merged_overalls('day_overall', overalls, pro_players_day, next_day_balance)
+    dump_merged_overalls('day_overall_post_july', overalls[-9:], pro_players_day, next_day_balance)
+    dump_merged_overalls('day_overall_cologne', overalls[-2:], pro_players_day, next_day_balance)
+    matches = [
+        {'team1_name': 'Vitality', 'team2_name': 'NAVI', 'maps': ['Nuke', 'Dust2', 'Mirage', 'Inferno'], 'wins': [True, False, True, True]}
+    ]
+    print_predict(overall_fantasy_points, pro_players, matches, 110)
 
 if __name__ == '__main__':
     main()

@@ -1,0 +1,283 @@
+{
+  "ATF": {
+    "team": "Falcons",
+    "role": "offlane",
+    "cost": 25,
+    "account_id": 183719386
+  },
+  "AMMAR_THE_F": {
+    "team": "Falcons",
+    "role": "offlane",
+    "cost": 25,
+    "account_id": 183719386,
+    "save_as": "ATF"
+  },
+  "Sneyking": {
+    "team": "Falcons",
+    "role": "support",
+    "cost": 25,
+    "account_id": 10366616
+  },
+  "skiter": {
+    "team": "Falcons",
+    "role": "carry",
+    "cost": 25,
+    "account_id": 100058342
+  },
+  "Malr1ne": {
+    "team": "Falcons",
+    "role": "mid",
+    "cost": 30,
+    "account_id": 898455820
+  },
+  "Cr1t-": {
+    "team": "Falcons",
+    "role": "support",
+    "cost": 25,
+    "account_id": 25907144
+  },
+  "gpk~": {
+    "team": "BB",
+    "role": "mid",
+    "cost": 35,
+    "account_id": 0
+  },
+  "Nightfall": {
+    "team": "BB",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 0
+  },
+  "Saika": {
+    "team": "BB",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 0,
+    "save_as": "Nightfall"
+  },
+  "MieRo`": {
+    "team": "BB",
+    "role": "offlane",
+    "cost": 20,
+    "account_id": 0
+  },
+  "MieRo ": {
+    "team": "BB",
+    "role": "offlane",
+    "cost": 20,
+    "account_id": 0,
+    "save_as": "MieRo`"
+  },
+  "Save-": {
+    "team": "BB",
+    "role": "support",
+    "cost": 20,
+    "account_id": 0
+  },
+  "TORONTOTOKYO": {
+    "team": "BB",
+    "role": "support",
+    "cost": 20,
+    "account_id": 0
+  },
+  "Quinn": {
+    "team": "GG",
+    "role": "mid",
+    "cost": 30,
+    "account_id": 0
+  },
+  "dyrachyo": {
+    "team": "GG",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 0
+  },
+  "Ace ♠": {
+    "team": "GG",
+    "role": "offlane",
+    "cost": 20,
+    "account_id": 0
+  },
+  "Seleri": {
+    "team": "GG",
+    "role": "support",
+    "cost": 25,
+    "account_id": 0
+  },
+  "tOfu": {
+    "team": "GG",
+    "role": "support",
+    "cost": 25,
+    "account_id": 0
+  },
+  "Ame": {
+    "team": "XG",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 0
+  },
+  "Ame^^": {
+    "team": "XG",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 0,
+    "save_as": "Ame"
+  },
+  "Xm": {
+    "team": "XG",
+    "role": "mid",
+    "cost": 20,
+    "account_id": 0
+  },
+  "Xxs": {
+    "team": "XG",
+    "role": "offlane",
+    "cost": 20,
+    "account_id": 0
+  },
+  "XinQ": {
+    "team": "XG",
+    "role": "support",
+    "cost": 25,
+    "account_id": 0
+  },
+  "Dy": {
+    "team": "XG",
+    "role": "support",
+    "cost": 20,
+    "account_id": 0
+  },
+  "Pure": {
+    "team": "Tundra",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 0
+  },
+  "Topson": {
+    "team": "Tundra",
+    "role": "mid",
+    "cost": 20,
+    "account_id": 0
+  },
+  "RAMZES666": {
+    "team": "Tundra",
+    "role": "offlane",
+    "cost": 20,
+    "account_id": 0
+  },
+  "9Class": {
+    "team": "Tundra",
+    "role": "support",
+    "cost": 20,
+    "account_id": 0
+  },
+  "Saksa": {
+    "team": "Tundra",
+    "role": "support",
+    "cost": 20,
+    "account_id": 103735745
+  },
+  "Whitemon": {
+    "team": "Tundra",
+    "role": "support",
+    "cost": 15,
+    "account_id": 0
+  },
+  "Nisha": {
+    "team": "Liquid",
+    "role": "mid",
+    "cost": 30,
+    "account_id": 0
+  },
+  "Insania": {
+    "team": "Liquid",
+    "role": "support",
+    "cost": 25,
+    "account_id": 0
+  },
+  "Insania ": {
+    "team": "Liquid",
+    "role": "support",
+    "cost": 25,
+    "account_id": 0,
+    "save_as": "Insania"
+  },
+  "m1CKe": {
+    "team": "Liquid",
+    "role": "carry",
+    "cost": 25,
+    "account_id": 0
+  },
+  "Boxi": {
+    "team": "Liquid",
+    "role": "support",
+    "cost": 25,
+    "account_id": 0
+  },
+  "33": {
+    "team": "Liquid",
+    "role": "offlane",
+    "cost": 25,
+    "account_id": 0
+  },
+  "Fishman": {
+    "team": "C9",
+    "role": "support",
+    "cost": 15,
+    "account_id": 127565532
+  },
+  "DM": {
+    "team": "C9",
+    "role": "offlane",
+    "cost": 15,
+    "account_id": 56351509
+  },
+  "Kataomi`": {
+    "team": "C9",
+    "role": "support",
+    "cost": 15,
+    "account_id": 196878136
+  },
+  "\u533b\u8005watson`": {
+    "team": "C9",
+    "role": "carry",
+    "cost": 25,
+    "account_id": 171262902
+  },
+  "No[o]ne-": {
+    "team": "C9",
+    "role": "mid",
+    "cost": 25,
+    "account_id": 106573901
+  },
+  "23savage": {
+    "team": "Aurora",
+    "role": "carry",
+    "cost": 20,
+    "account_id": 375507918
+  },
+  "lorenof": {
+    "team": "Aurora",
+    "role": "mid",
+    "cost": 25,
+    "account_id": 210053851
+  },
+  "Jabz": {
+    "team": "Aurora",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 100471531
+  },
+  "Q": {
+    "team": "Aurora",
+    "role": "support",
+    "cost": 15,
+    "account_id": 193815691
+  },
+  "Oli~": {
+    "team": "Aurora",
+    "role": "support",
+    "cost": 15,
+    "account_id": 101259972
+  }
+}

@@ -1,0 +1,242 @@
+{
+  "gpk~": {
+    "team": "BB",
+    "role": "mid",
+    "cost": 35,
+    "account_id": 0
+  },
+  "Nightfall": {
+    "team": "BB",
+    "role": "carry",
+    "cost": 35,
+    "account_id": 0
+  },
+  "MieRo`": {
+    "team": "BB",
+    "role": "offlane",
+    "cost": 20,
+    "account_id": 0
+  },
+  "Save-": {
+    "team": "BB",
+    "role": "support",
+    "cost": 20,
+    "account_id": 0
+  },
+  "TORONTOTOKYO": {
+    "team": "BB",
+    "role": "support",
+    "cost": 20,
+    "account_id": 0
+  },
+  "Ame^^": {
+    "team": "XG",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 0
+  },
+  "Xm": {
+    "team": "XG",
+    "role": "mid",
+    "cost": 25,
+    "account_id": 0
+  },
+  "Xxs": {
+    "team": "XG",
+    "role": "offlane",
+    "cost": 20,
+    "account_id": 0
+  },
+  "XinQ": {
+    "team": "XG",
+    "role": "support",
+    "cost": 30,
+    "account_id": 0
+  },
+  "Dy": {
+    "team": "XG",
+    "role": "support",
+    "cost": 20,
+    "account_id": 0
+  },
+  "Pure": {
+    "team": "Tundra",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 0
+  },
+  "Topson": {
+    "team": "Tundra",
+    "role": "mid",
+    "cost": 20,
+    "account_id": 0
+  },
+  "RAMZES666": {
+    "team": "Tundra",
+    "role": "offlane",
+    "cost": 20,
+    "account_id": 0
+  },
+  "9Class": {
+    "team": "Tundra",
+    "role": "support",
+    "cost": 15,
+    "account_id": 0
+  },
+  "Whitemon": {
+    "team": "Tundra",
+    "role": "support",
+    "cost": 15,
+    "account_id": 0
+  },
+  "Nisha": {
+    "team": "Liquid",
+    "role": "mid",
+    "cost": 30,
+    "account_id": 0
+  },
+  "Insania ": {
+    "team": "Liquid",
+    "role": "support",
+    "cost": 25,
+    "account_id": 0
+  },
+  "m1CKe": {
+    "team": "Liquid",
+    "role": "carry",
+    "cost": 25,
+    "account_id": 0
+  },
+  "Boxi": {
+    "team": "Liquid",
+    "role": "support",
+    "cost": 20,
+    "account_id": 0
+  },
+  "33": {
+    "team": "Liquid",
+    "role": "offlane",
+    "cost": 25,
+    "account_id": 0
+  },
+  "Fishman": {
+    "team": "Entity",
+    "role": "support",
+    "cost": 15,
+    "account_id": 127565532
+  },
+  "DM": {
+    "team": "Entity",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 56351509
+  },
+  "Kataomi`": {
+    "team": "Entity",
+    "role": "support",
+    "cost": 15,
+    "account_id": 196878136
+  },
+  "\u533b\u8005watson`": {
+    "team": "Entity",
+    "role": "carry",
+    "cost": 25,
+    "account_id": 171262902
+  },
+  "No[o]ne-": {
+    "team": "Entity",
+    "role": "mid",
+    "cost": 20,
+    "account_id": 106573901
+  },
+  "Ulnit": {
+    "team": "MOUZ",
+    "role": "carry",
+    "cost": 15,
+    "account_id": 109757023
+  },
+  "Supream^": {
+    "team": "MOUZ",
+    "role": "mid",
+    "cost": 15,
+    "account_id": 58513047
+  },
+  "Force": {
+    "team": "MOUZ",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 146711951
+  },
+  "NARMAN": {
+    "team": "MOUZ",
+    "role": "support",
+    "cost": 10,
+    "account_id": 343084576
+  },
+  "Bengan": {
+    "team": "MOUZ",
+    "role": "support",
+    "cost": 10,
+    "account_id": 48823667
+  },
+  "TA2000": {
+    "team": "PSG.Quest",
+    "role": "carry",
+    "cost": 15,
+    "account_id": 96183976
+  },
+  "No!ob\u2122": {
+    "team": "PSG.Quest",
+    "role": "mid",
+    "cost": 15,
+    "account_id": 140297552
+  },
+  "Malik": {
+    "team": "PSG.Quest",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 203351055
+  },
+  "OmaR": {
+    "team": "PSG.Quest",
+    "role": "support",
+    "cost": 15,
+    "account_id": 152168157
+  },
+  "Dukalis": {
+    "team": "PSG.Quest",
+    "role": "support",
+    "cost": 10,
+    "account_id": 73401082
+  },
+  "payk": {
+    "team": "Beastcoast",
+    "role": "carry",
+    "cost": 10,
+    "account_id": 425588742
+  },
+  "Lumpy ": {
+    "team": "Beastcoast",
+    "role": "mid",
+    "cost": 10,
+    "account_id": 118948666
+  },
+  "Vitaly \u8a87\u308a": {
+    "team": "Beastcoast",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 138177198
+  },
+  "Elmisho": {
+    "team": "Beastcoast",
+    "role": "support",
+    "cost": 10,
+    "account_id": 1031547092
+  },
+  "MoOz": {
+    "team": "Beastcoast",
+    "role": "support",
+    "cost": 15,
+    "account_id": 349310876
+  }
+}

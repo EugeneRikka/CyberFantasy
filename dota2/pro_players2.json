@@ -5,20 +5,13 @@
     "cost": 25,
     "account_id": 183719386
   },
-  "AMMAR_THE_F": {
-    "team": "Falcons",
-    "role": "offlane",
-    "cost": 25,
-    "account_id": 183719386,
-    "save_as": "ATF"
-  },
   "Sneyking": {
     "team": "Falcons",
     "role": "support",
     "cost": 25,
     "account_id": 10366616
   },
-  "skiter": {
+  "Skiter": {
     "team": "Falcons",
     "role": "carry",
     "cost": 25,
@@ -27,10 +20,10 @@
   "Malr1ne": {
     "team": "Falcons",
     "role": "mid",
-    "cost": 30,
+    "cost": 35,
     "account_id": 898455820
   },
-  "Cr1t-": {
+  "Cr1t": {
     "team": "Falcons",
     "role": "support",
     "cost": 25,
@@ -45,28 +38,14 @@
   "Nightfall": {
     "team": "BB",
     "role": "carry",
-    "cost": 30,
+    "cost": 35,
     "account_id": 0
-  },
-  "Saika": {
-    "team": "BB",
-    "role": "carry",
-    "cost": 30,
-    "account_id": 0,
-    "save_as": "Nightfall"
   },
   "MieRo`": {
     "team": "BB",
     "role": "offlane",
     "cost": 20,
     "account_id": 0
-  },
-  "MieRo ": {
-    "team": "BB",
-    "role": "offlane",
-    "cost": 20,
-    "account_id": 0,
-    "save_as": "MieRo`"
   },
   "Save-": {
     "team": "BB",
@@ -89,7 +68,7 @@
   "dyrachyo": {
     "team": "GG",
     "role": "carry",
-    "cost": 30,
+    "cost": 25,
     "account_id": 0
   },
   "Ace ♠": {
@@ -101,32 +80,25 @@
   "Seleri": {
     "team": "GG",
     "role": "support",
-    "cost": 25,
+    "cost": 20,
     "account_id": 0
   },
   "tOfu": {
     "team": "GG",
     "role": "support",
-    "cost": 25,
-    "account_id": 0
-  },
-  "Ame": {
-    "team": "XG",
-    "role": "carry",
-    "cost": 30,
+    "cost": 20,
     "account_id": 0
   },
   "Ame^^": {
     "team": "XG",
     "role": "carry",
     "cost": 30,
-    "account_id": 0,
-    "save_as": "Ame"
+    "account_id": 0
   },
   "Xm": {
     "team": "XG",
     "role": "mid",
-    "cost": 20,
+    "cost": 25,
     "account_id": 0
   },
   "Xxs": {
@@ -138,7 +110,7 @@
   "XinQ": {
     "team": "XG",
     "role": "support",
-    "cost": 25,
+    "cost": 30,
     "account_id": 0
   },
   "Dy": {
@@ -168,14 +140,8 @@
   "9Class": {
     "team": "Tundra",
     "role": "support",
-    "cost": 20,
+    "cost": 15,
     "account_id": 0
-  },
-  "Saksa": {
-    "team": "Tundra",
-    "role": "support",
-    "cost": 20,
-    "account_id": 103735745
   },
   "Whitemon": {
     "team": "Tundra",
@@ -199,8 +165,7 @@
     "team": "Liquid",
     "role": "support",
     "cost": 25,
-    "account_id": 0,
-    "save_as": "Insania"
+    "account_id": 0
   },
   "m1CKe": {
     "team": "Liquid",
@@ -211,7 +176,7 @@
   "Boxi": {
     "team": "Liquid",
     "role": "support",
-    "cost": 25,
+    "cost": 20,
     "account_id": 0
   },
   "33": {
@@ -220,60 +185,46 @@
     "cost": 25,
     "account_id": 0
   },
-  "Erika": {
-    "team": "Zero",
+  "Timado": {
+    "team": "OG",
     "role": "carry",
     "cost": 20,
-    "account_id": 0
+    "account_id": 97658618
   },
-  "YSR-04E": {
-    "team": "Zero",
-    "role": "carry",
-    "cost": 20,
-    "account_id": 0,
-    "save_as": "Erika"
-  },
-  "7eeeeeee": {
-    "team": "Zero",
+  "bzm": {
+    "team": "OG",
     "role": "mid",
-    "cost": 10,
+    "cost": 25,
     "account_id": 0
   },
-  "Beyond": {
-    "team": "Zero",
+  "Wisper": {
+    "team": "OG",
     "role": "offlane",
-    "cost": 10,
+    "cost": 15,
     "account_id": 0
   },
-  "ponlo": {
-    "team": "Zero",
+  "Ari": {
+    "team": "OG",
     "role": "support",
-    "cost": 10,
+    "cost": 15,
     "account_id": 0
   },
-  "zzq": {
-    "team": "Zero",
+  "Ceb": {
+    "team": "OG",
     "role": "support",
-    "cost": 10,
+    "cost": 15,
     "account_id": 0
   },
   "Yatoro雨": {
     "team": "Spirit",
     "role": "carry",
-    "cost": 30,
+    "cost": 35,
     "account_id": 0
-  },
-  "Raddan": {
-    "team": "Spirit",
-    "role": "carry",
-    "cost": 30,
-    "account_id": 0,
-    "save_as": "Yatoro雨"
   },
   "Larl": {
     "team": "Spirit",
     "role": "mid",
-    "cost": 30,
+    "cost": 35,
     "account_id": 0
   },
   "Collapse": {
@@ -295,94 +246,124 @@
     "account_id": 0
   },
   "Fishman": {
-    "team": "C9",
+    "team": "Entity",
     "role": "support",
     "cost": 15,
     "account_id": 127565532
   },
   "DM": {
-    "team": "C9",
+    "team": "Entity",
     "role": "offlane",
-    "cost": 15,
+    "cost": 10,
     "account_id": 56351509
   },
   "Kataomi`": {
-    "team": "C9",
+    "team": "Entity",
     "role": "support",
     "cost": 15,
     "account_id": 196878136
   },
   "\u533b\u8005watson`": {
-    "team": "C9",
+    "team": "Entity",
     "role": "carry",
     "cost": 25,
     "account_id": 171262902
   },
   "No[o]ne-": {
-    "team": "C9",
+    "team": "Entity",
     "role": "mid",
-    "cost": 25,
+    "cost": 20,
     "account_id": 106573901
   },
-  "Akashi": {
-    "team": "Talon",
+  "Ulnit": {
+    "team": "MOUZ",
     "role": "carry",
-    "cost": 20,
-    "account_id": 0
-  },
-  "Mikoto": {
-    "team": "Talon",
-    "role": "mid",
-    "cost": 30,
-    "account_id": 0
-  },
-  "Ws`": {
-    "team": "Talon",
-    "role": "offlane",
     "cost": 15,
-    "account_id": 0
+    "account_id": 109757023
   },
-  "Jhocam": {
-    "team": "Talon",
-    "role": "support",
-    "cost": 10,
-    "account_id": 0
-  },
-  "ponyo": {
-    "team": "Talon",
-    "role": "support",
-    "cost": 10,
-    "account_id": 0
-  },
-  "Munkushi~": {
-    "team": "1W",
-    "role": "carry",
-    "cost": 25,
-    "account_id": 0
-  },
-  "CHIRA_JUNIOR": {
-    "team": "1W",
+  "Supream^": {
+    "team": "MOUZ",
     "role": "mid",
     "cost": 15,
-    "account_id": 0
+    "account_id": 58513047
   },
-  "Cloud": {
-    "team": "1W",
+  "Force": {
+    "team": "MOUZ",
     "role": "offlane",
-    "cost": 15,
-    "account_id": 0
+    "cost": 10,
+    "account_id": 146711951
   },
-  "swedenstrong": {
-    "team": "1W",
+  "NARMAN": {
+    "team": "MOUZ",
+    "role": "support",
+    "cost": 10,
+    "account_id": 343084576
+  },
+  "Bengan": {
+    "team": "MOUZ",
+    "role": "support",
+    "cost": 10,
+    "account_id": 48823667
+  },
+  "Kiritych~": {
+    "team": "VP",
+    "role": "carry",
+    "cost": 15,
+    "account_id": 172099728
+  },
+  "squad1x": {
+    "team": "VP",
+    "role": "mid",
+    "cost": 15,
+    "account_id": 123023873
+  },
+  "Noticed": {
+    "team": "VP",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 195108598
+  },
+  "Antares": {
+    "team": "VP",
+    "role": "support",
+    "cost": 10,
+    "account_id": 161839895
+  },
+  "Fng": {
+    "team": "VP",
+    "role": "support",
+    "cost": 10,
+    "account_id": 94049589
+  },
+  "TA2000": {
+    "team": "PSG.Quest",
+    "role": "carry",
+    "cost": 15,
+    "account_id": 96183976
+  },
+  "No!ob\u2122": {
+    "team": "PSG.Quest",
+    "role": "mid",
+    "cost": 15,
+    "account_id": 140297552
+  },
+  "Malik": {
+    "team": "PSG.Quest",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 203351055
+  },
+  "OmaR": {
+    "team": "PSG.Quest",
     "role": "support",
     "cost": 15,
-    "account_id": 0
+    "account_id": 152168157
   },
-  "RESPECT": {
-    "team": "1W",
+  "Dukalis": {
+    "team": "PSG.Quest",
     "role": "support",
-    "cost": 15,
-    "account_id": 0
+    "cost": 10,
+    "account_id": 73401082
   },
   "NothingToSay": {
     "team": "G2.IG",
@@ -393,7 +374,7 @@
   "Monet": {
     "team": "G2.IG",
     "role": "carry",
-    "cost": 20,
+    "cost": 25,
     "account_id": 148215639
   },
   "BoBoKa": {
@@ -414,13 +395,73 @@
     "cost": 15,
     "account_id": 138857296
   },
-  "23savage": {
+  "shiro": {
+    "team": "PSG.LGD",
+    "role": "carry",
+    "cost": 20,
+    "account_id": 320252024
+  },
+  "niu": {
+    "team": "PSG.LGD",
+    "role": "offlane",
+    "cost": 15,
+    "account_id": 145957968
+  },
+  "EchozZ": {
+    "team": "PSG.LGD",
+    "role": "mid",
+    "cost": 10,
+    "account_id": 315272623
+  },
+  "WhyouSm1Le": {
+    "team": "PSG.LGD",
+    "role": "support",
+    "cost": 15,
+    "account_id": 111114687
+  },
+  "Pyw": {
+    "team": "PSG.LGD",
+    "role": "support",
+    "cost": 15,
+    "account_id": 138543123
+  },
+  "Lou": {
+    "team": "Azure Ray",
+    "role": "carry",
+    "cost": 20,
+    "account_id": 185908355
+  },
+  "fy": {
+    "team": "Azure Ray",
+    "role": "support",
+    "cost": 15,
+    "account_id": 101695162
+  },
+  "Ori": {
+    "team": "Azure Ray",
+    "role": "mid",
+    "cost": 20,
+    "account_id": 107803494
+  },
+  "\u5929\u547d": {
+    "team": "Azure Ray",
+    "role": "support",
+    "cost": 20,
+    "account_id": 158847773
+  },
+  "Bach": {
+    "team": "Azure Ray",
+    "role": "offlane",
+    "cost": 15,
+    "account_id": 118134220
+  },
+  "23Savage": {
     "team": "Aurora",
     "role": "carry",
     "cost": 20,
     "account_id": 375507918
   },
-  "lorenof": {
+  "Lorenof": {
     "team": "Aurora",
     "role": "mid",
     "cost": 25,
@@ -429,7 +470,7 @@
   "Jabz": {
     "team": "Aurora",
     "role": "offlane",
-    "cost": 10,
+    "cost": 15,
     "account_id": 100471531
   },
   "Q": {
@@ -438,11 +479,41 @@
     "cost": 15,
     "account_id": 193815691
   },
-  "Oli~": {
+  "Oli": {
     "team": "Aurora",
     "role": "support",
     "cost": 15,
     "account_id": 101259972
+  },
+  "Natsumi": {
+    "team": "Blacklist",
+    "role": "carry",
+    "cost": 10,
+    "account_id": 355168766
+  },
+  "Abed": {
+    "team": "Blacklist",
+    "role": "mid",
+    "cost": 20,
+    "account_id": 154715080
+  },
+  "Gabbi": {
+    "team": "Blacklist",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 152545459
+  },
+  "TIMS": {
+    "team": "Blacklist",
+    "role": "support",
+    "cost": 15,
+    "account_id": 155494381
+  },
+  "Jaunuel": {
+    "team": "Blacklist",
+    "role": "support",
+    "cost": 10,
+    "account_id": 148526973
   },
   "Yuma": {
     "team": "Nouns",
@@ -450,18 +521,11 @@
     "cost": 15,
     "account_id": 177203952
   },
-  "Copy": {
-    "team": "Nouns",
-    "role": "mid",
-    "cost": 15,
-    "account_id": 115651292
-  },
   "Copiwra": {
     "team": "Nouns",
     "role": "mid",
     "cost": 15,
-    "account_id": 115651292,
-    "save_as": "Copy"
+    "account_id": 115651292
   },
   "Gunnar": {
     "team": "Nouns",
@@ -487,17 +551,10 @@
     "cost": 20,
     "account_id": 164685175
   },
-  "k1 hector tqmM": {
-    "team": "Heroic",
-    "role": "carry",
-    "cost": 20,
-    "account_id": 164685175,
-    "save_as": "K1"
-  },
-  "4nalog <01": {
+  "4nalog": {
     "team": "Heroic",
     "role": "mid",
-    "cost": 15,
+    "cost": 10,
     "account_id": 131303632
   },
   "Davai Lama": {
@@ -515,15 +572,8 @@
   "KJ": {
     "team": "Heroic",
     "role": "support",
-    "cost": 15,
+    "cost": 10,
     "account_id": 81306398
-  },
-  "KingJungles": {
-    "team": "Heroic",
-    "role": "support",
-    "cost": 15,
-    "account_id": 81306398,
-    "save_as": "KJ"
   },
   "payk": {
     "team": "Beastcoast",
@@ -531,18 +581,11 @@
     "cost": 10,
     "account_id": 425588742
   },
-  "Lumpy": {
-    "team": "Beastcoast",
-    "role": "mid",
-    "cost": 10,
-    "account_id": 118948666
-  },
   "Lumpy ": {
     "team": "Beastcoast",
     "role": "mid",
     "cost": 10,
-    "account_id": 118948666,
-    "save_as": "Lumpy"
+    "account_id": 118948666
   },
   "Vitaly \u8a87\u308a": {
     "team": "Beastcoast",
@@ -559,7 +602,7 @@
   "MoOz": {
     "team": "Beastcoast",
     "role": "support",
-    "cost": 10,
+    "cost": 15,
     "account_id": 349310876
   }
 }
