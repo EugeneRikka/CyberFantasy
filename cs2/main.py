@@ -1,6 +1,11 @@
 import itertools
 import json
 import os
+import random
+import re
+import time
+import warnings
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -9,7 +14,6 @@ from bs4 import BeautifulSoup
 from selenium_stealth import stealth
 import undetected_chromedriver as uc
 from styleframe import StyleFrame, Styler, utils
-import multiprocessing
 import concurrent.futures
 
 HLTV_URL = 'https://www.hltv.org'
@@ -20,8 +24,13 @@ def get_selenium_driver() -> uc.Chrome:
     options.add_argument('--headless=new')
     options.add_argument('--disable-gpu')
     options.add_argument('--disable-renderer-backgrounding')
-    driver_executable_path = f'{Path.home()}/appdata/roaming/undetected_chromedriver/undetected_chromedriver.exe'
-    driver = uc.Chrome(driver_executable_path=driver_executable_path, options=options, no_sandbox=False, user_multi_procs=False, use_subprocess=False)
+    driver = uc.Chrome(options=options, no_sandbox=False, user_multi_procs=False, use_subprocess=False)
+
+    driver.execute_cdp_cmd('Emulation.setTimezoneOverride', {
+        'timezoneId': 'Europe/Berlin'
+        # 'timezoneId': 'America/Chicago'
+    })
+
     stealth(
         driver,
         languages=['en-US', 'en'],
@@ -85,12 +94,21 @@ def get_map_stats(details_soup: BeautifulSoup) -> dict:
     map_stats['players'] = {}
     for table_soup in details_soup.find_all('table', 'totalstats'):
         for row_soup in table_soup.find_all('tr')[1:]:
+            try:
+                opening_kills_diff = row_soup.find('td', 'st-opkd').text.split(' ')
+                opening_kills = int(opening_kills_diff[0]) - int(opening_kills_diff[2])
+                deaths = int(row_soup.find('td', 'st-deaths').text.split(' ')[0])
+            except Exception:
+                opening_kills = int(row_soup.find('td', 'st-fkdiff').text)
+                deaths = int(row_soup.find('td', 'st-deaths').text)
+
+            assists = row_soup.find('td', 'st-assists').text.split(' ')
             player_stats = {
                 'kills': int(row_soup.find('td', 'st-kills').text.split(' ')[0]),
-                'assists': int(row_soup.find('td', 'st-assists').text.split(' ')[0]),
-                'flashes': int(row_soup.find('td', 'st-assists').text.split(' ')[1].replace('(', '').replace(')', '')),
-                'deaths': int(row_soup.find('td', 'st-deaths').text),
-                'fkdiff': int(row_soup.find('td', 'st-fkdiff').text)
+                'assists': int(assists[0]),
+                'flashes': int(assists[1].replace('(', '').replace(')', '')),
+                'deaths': deaths,
+                'fkdiff': opening_kills
             }
 
             player_name = row_soup.find('td', 'st-player').find('a').text
@@ -100,45 +118,62 @@ def get_map_stats(details_soup: BeautifulSoup) -> dict:
 
 
 def parse_match(match: dict) -> bool:
-    match_soup = get_soup(HLTV_URL, match['url'])
-    detailed_stats_div = match_soup.find('div', 'stats-detailed-stats')
-    if detailed_stats_div is None:
-        print(f'filtered: {match["url"]}')
-        return False
+    match_soup_loaded = False
+    details_soup_loaded = False
+    loaded_maps_soups = set()
+    reload = False
+    while True:
+        try:
+            match_soup = get_soup(HLTV_URL, match['url'], reload and match_soup_loaded is False)
+            detailed_stats_div = match_soup.find('div', 'stats-detailed-stats')
+            if detailed_stats_div is None and match_soup.find('div', 'match-page') is not None:
+                print(f'filtered: {match["url"]}')
+                return False
 
-    match['details_url'] = detailed_stats_div.find('a').get('href')
+            match['details_url'] = detailed_stats_div.find('a').get('href')
 
-    details_soup = get_soup(HLTV_URL, match['details_url'])
+            match_soup_loaded = True
 
-    match['total'] = get_map_stats(details_soup)
-    match['maps'] = []
-    maps_soup = details_soup.findAll('a', 'stats-match-map')
-    if maps_soup:
-        for map_soup in maps_soup[1:]:
-            map_url = map_soup.get('href')
-            map_soup = get_soup(HLTV_URL, map_url)
-            match['maps'].append(get_map_stats(map_soup))
-    else:
-        match['maps'].append(match['total'])
+            details_soup = get_soup(HLTV_URL, match['details_url'], reload and details_soup_loaded is False)
+            match['total'] = get_map_stats(details_soup)
 
-    match['maps_num'] = len(match['maps'])
+            details_soup_loaded = True
 
-    return True
+            match['maps'] = []
+            maps_soup = details_soup.findAll('a', 'stats-match-map')
+            if maps_soup:
+                for map_soup in maps_soup[1:]:
+                    map_url = map_soup.get('href')
+                    map_soup = get_soup(HLTV_URL, map_url, reload and map_url not in loaded_maps_soups)
+                    match['maps'].append(get_map_stats(map_soup))
+
+                    loaded_maps_soups.add(map_url)
+            else:
+                match['maps'].append(match['total'])
+
+            match['maps_num'] = len(match['maps'])
+        except Exception:
+            time.sleep(random.randint(3000, 7000) / 1000)
+            reload = True
+            continue
+
+        return True
 
 
 def parse_event(event_id: int, reload: bool) -> dict:
-    # matches = get_matches(event_id, reload)
-    # approved_matches = []
-    # for match in matches:
-    #     if parse_match(match):
-    #         approved_matches.append(match)
-    #
-    # return {'matches': approved_matches}
+    if reload:
+        matches = get_matches(event_id, reload)
+        approved_matches = []
+        for match in matches:
+            if parse_match(match):
+                approved_matches.append(match)
 
-    matches = get_matches(event_id, reload)
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        results = list(executor.map(parse_match, matches))
-        return {'matches': [match for match, approved in zip(matches, results) if approved]}
+        return {'matches': approved_matches}
+    else:
+        matches = get_matches(event_id, reload)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            results = list(executor.map(parse_match, matches))
+            return {'matches': [match for match, approved in zip(matches, results) if approved]}
 
 
 def get_event_data(event_id: int, reload: bool):
@@ -203,11 +238,11 @@ def create_fantasy_points_template(pro_players):
 
 def calculate_map_points(player_stat: dict, maps_num: int):
     return {
-        'kills': player_stat['kills'] * 2,
-        'assists': (player_stat['assists'] - player_stat['flashes']) * 1.2,
-        'flashes': player_stat['flashes'] * 0.4,
-        'deaths': (12 * maps_num - player_stat['deaths']) * 1.2,
-        'fkdiff': 0 if player_stat['fkdiff'] < 0 else player_stat['fkdiff'] * 1.5
+        'kills': player_stat['kills'],
+        'assists': (player_stat['assists'] -  player_stat['flashes']) * 0.6,
+        'flashes': player_stat['flashes'] * 0.2,
+        'deaths': (12 * maps_num - player_stat['deaths']) * 0.6,
+        'fkdiff': 0 if player_stat['fkdiff'] < 0 else player_stat['fkdiff'] * 0.75
     }
 
 
@@ -220,9 +255,14 @@ def compute_fantasy_points(event_data: dict, pro_players: dict, day: str) -> dic
         for player_name, player_stat in match['total']['players'].items():
             points_details = calculate_map_points(player_stat, match['maps_num'])
             points_details['fkdiff'] = 0
+            team1_wins = 0
+            team2_wins = 0
             for map_info in match['maps']:
                 fk_diff = map_info['players'][player_name]['fkdiff']
-                points_details['fkdiff'] += 0 if fk_diff < 0 else fk_diff * 1.5
+                points_details['fkdiff'] += 0 if fk_diff < 0 else fk_diff * 0.75
+
+                team1_wins += map_info['team1_rounds'] > map_info['team2_rounds']
+                team2_wins += map_info['team1_rounds'] < map_info['team2_rounds']
 
             role = pro_players[player_name]['role']
             player_info = fantasy_points[role][player_name]
@@ -232,8 +272,10 @@ def compute_fantasy_points(event_data: dict, pro_players: dict, day: str) -> dic
                 player_info['points details sum'][key] = np.round(player_info['points details sum'].get(key, 0) + value / match['maps_num'], 3)
 
             points_sum = sum(points_details.values())
-            player_info['fantasy points'].append(np.round(points_sum / match['maps_num'], 3))
             player_info['points'].append(np.round(points_sum, 3))
+
+            multiplier = {1: 1.0, 2: 2.0, 3: 3.0}.get(max(team1_wins, team2_wins), 0.0)
+            player_info['fantasy points'].append(np.round(points_sum / match['maps_num'] * multiplier, 3))
 
     for role in fantasy_points.keys():
         for player_name, player_info in list(fantasy_points[role].items()):
@@ -273,14 +315,14 @@ def dump_points_to_excel(writer, fantasy_points, sorting_key):
         sf.to_excel(writer, sheet_name=role, best_fit=columns)
 
 
-def dump_captains_to_excel(writer, fantasy_points):
+def dump_captains_to_excel(writer, fantasy_points, pro_players):
     captains_info = []
     for role in fantasy_points.keys():
         for player_name, player_info in fantasy_points[role].items():
-            captains_info.append([player_name, player_info['total points'] * 2, role])
-    captains_info = sorted(captains_info, key=lambda x: x[1], reverse=True)
+            captains_info.append([player_name, pro_players[player_name]['team'], pro_players[player_name]['cost'], player_info['total points'] * 2, role])
+    captains_info = sorted(captains_info, key=lambda x: x[3], reverse=True)
 
-    columns = ['name', 'points', 'role']
+    columns = ['name', 'team', 'cost', 'points', 'role']
     df = pd.DataFrame(captains_info, columns=columns)
     sf = StyleFrame(df)
     sf.A_FACTOR = 4
@@ -330,7 +372,7 @@ def generate_teams(fantasy_points, pro_players, teams_count, balance, sort_key):
     return [dream_teams_rating[:teams_count], teams_rating[:teams_count]]
 
 
-def dump_teams_rating_to_excel(writer, fantasy_points, pro_players, teams_count, balance, sort_key):
+def dump_teams_rating_to_excel(writer, fantasy_points, pro_players, teams_count, balance, sort_key, postfix=''):
     dream_teams_rating, teams_rating = generate_teams(fantasy_points, pro_players, teams_count, balance, sort_key)
 
     columns = ['sniper', 'rifler1', 'rifler2', 'rifler3', 'rifler4', 'cost', 'points']
@@ -346,7 +388,7 @@ def dump_teams_rating_to_excel(writer, fantasy_points, pro_players, teams_count,
         top_teams_df = pd.DataFrame(top_teams_data, columns=columns)
         sf_top_teams_df = StyleFrame(top_teams_df)
         sf_top_teams_df.A_FACTOR = 4
-        sf_top_teams_df.to_excel(writer, sheet_name='Top teams', best_fit=columns)
+        sf_top_teams_df.to_excel(writer, sheet_name=f'Top teams{postfix}', best_fit=columns)
 
     top_dream_teams_data = list()
 
@@ -359,7 +401,7 @@ def dump_teams_rating_to_excel(writer, fantasy_points, pro_players, teams_count,
     top_dream_teams_df = pd.DataFrame(top_dream_teams_data, columns=columns)
     sf_top_dream_teams_df = StyleFrame(top_dream_teams_df)
     sf_top_dream_teams_df.A_FACTOR = 4
-    sf_top_dream_teams_df.to_excel(writer, sheet_name='Top dream teams', best_fit=columns)
+    sf_top_dream_teams_df.to_excel(writer, sheet_name=f'Top dream teams{postfix}', best_fit=columns)
 
 
 def calculate_fantasy_points(pro_players: dict, event_data: dict, day: str) -> dict:
@@ -372,6 +414,7 @@ def compute_overall_fantasy_points(event_data: dict) -> dict:
     fantasy_points = {}
     for match in event_data['matches']:
         for map_stat in match['maps']:
+            is_overtime = map_stat['team1_rounds'] > 13 or map_stat['team2_rounds'] > 13
             for player_index, [player_name, player_stat] in enumerate(map_stat['players'].items()):
                 is_team1 = player_index < 5
                 if player_name not in fantasy_points:
@@ -382,6 +425,7 @@ def compute_overall_fantasy_points(event_data: dict) -> dict:
                         'wins': [],
                         'wins count': 0,
                         'loses count': 0,
+                        'overtimes count': 0,
                         'rounds won': [],
                         'maps points': '',
                         'maps': {}
@@ -396,6 +440,7 @@ def compute_overall_fantasy_points(event_data: dict) -> dict:
                 player_info['points per round'].append(round(points_sum / map_stat['rounds'], 3))
                 player_info['wins'].append(is_win)
                 player_info['wins count' if is_win else 'loses count'] += 1
+                player_info['overtimes count'] += is_overtime
                 player_info['rounds won'].append(rounds_won)
                 player_info['maps points'] += '{0: <7}'.format(points_sum)
 
@@ -406,6 +451,7 @@ def compute_overall_fantasy_points(event_data: dict) -> dict:
                         'wins': [],
                         'wins count': 0,
                         'loses count': 0,
+                        'overtimes count': 0,
                         'rounds won': [],
                         'map points': ''
                     }
@@ -415,6 +461,7 @@ def compute_overall_fantasy_points(event_data: dict) -> dict:
                 map_info['points per round'].append(round(points_sum / map_stat['rounds'], 3))
                 map_info['wins'].append(is_win)
                 map_info['wins count' if is_win else 'loses count'] += 1
+                map_info['overtimes count'] += is_overtime
                 map_info['rounds won'].append(rounds_won)
                 map_info['map points'] += '{0: <7}'.format(points_sum)
     return fantasy_points
@@ -431,6 +478,7 @@ def postproc_overall_fantasy_points(fantasy_points: dict):
             else:
                 player_info['mean points per lose'] += np.round(points / player_info['loses count'], 3)
         player_info['winrate'] = f'{np.round(player_info['wins count'] / len(player_info['points']) * 100, 1)}%'
+        player_info['overtimes'] = f'{np.round(player_info['overtimes count'] / len(player_info['points']) * 100, 1)}%'
         player_info['mean points per round'] = np.round(np.mean(player_info['points per round']), 3)
         player_info['mean points per cost'] = 0
         if 'cost' in player_info.keys():
@@ -450,6 +498,7 @@ def postproc_overall_fantasy_points(fantasy_points: dict):
                 else:
                     map_info['mean points per lose'] += np.round(points / map_info['loses count'], 3)
             map_info['winrate'] = f'{np.round(map_info['wins count'] / len(map_info['points']) * 100, 1)}%'
+            map_info['overtimes'] = f'{np.round(map_info['overtimes count'] / len(map_info['points']) * 100, 1)}%'
             map_info['mean points per round'] = np.round(np.mean(map_info['points per round']), 3)
             map_info['min points'] = np.round(min(map_info['points']), 3)
             map_info['max points'] = np.round(max(map_info['points']), 3)
@@ -465,7 +514,7 @@ def postproc_overall_fantasy_points(fantasy_points: dict):
 def dump_overall_to_excel(writer, fantasy_points, sort_key):
     fantasy_points = dict(sorted(fantasy_points.items(), key=lambda x: x[1][sort_key], reverse=True))
     data = list()
-    main_columns = ['team', 'role', 'cost', 'mean points', 'mean points per win', 'mean points per lose', 'winrate', 'mean points per round', 'mean points per cost', 'min points', 'max points', 'rounds winrate', 'maps points']
+    main_columns = ['team', 'role', 'cost', 'mean points', 'mean points per win', 'mean points per lose', 'winrate', 'overtimes', 'mean points per round', 'mean points per cost', 'min points', 'max points', 'rounds winrate', 'maps points']
     for player_name, player_info in fantasy_points.items():
         row = [player_name]
         for column_name in main_columns:
@@ -489,7 +538,7 @@ def dump_overall_to_excel(writer, fantasy_points, sort_key):
 def dump_maps_perfomance_to_excel(writer, fantasy_points):
     maps_data = {}
     main_columns = ['team', 'role', 'cost']
-    map_columns = ['map rating', 'mean points', 'mean points per win', 'mean points per lose', 'winrate', 'mean points per round', 'min points', 'max points', 'rounds winrate', 'map points']
+    map_columns = ['map rating', 'mean points', 'mean points per win', 'mean points per lose', 'winrate', 'overtimes', 'mean points per round', 'min points', 'max points', 'rounds winrate', 'map points']
     for player_name, player_info in fantasy_points.items():
         for map_name, map_info in player_info['maps'].items():
             if map_name not in maps_data:
@@ -522,7 +571,7 @@ def dump_maps_perfomance_to_excel(writer, fantasy_points):
 
 
 def dump_overall(excel_file_name: str, overall_fantasy_points: dict, pro_players: dict, balance: int):
-    with pd.ExcelWriter(excel_file_name) as writer:
+    with pd.ExcelWriter(excel_file_name, engine='openpyxl') as writer:
         for player_name, player_stat in overall_fantasy_points.items():
             if player_name in pro_players:
                 player_stat['role'] = pro_players[player_name]['role']
@@ -542,13 +591,20 @@ def dump_overall(excel_file_name: str, overall_fantasy_points: dict, pro_players
 
         if balance:
             dump_teams_rating_to_excel(writer, fantasy_points_by_role, pro_players, 1000, balance, 'mean points')
+            dump_teams_rating_to_excel(writer, fantasy_points_by_role, pro_players, 1000, balance, 'mean points per win', ' per win')
+            dump_teams_rating_to_excel(writer, fantasy_points_by_role, pro_players, 1000, balance, 'mean points per lose', ' per lose')
 
 
 def dump_day(excel_file_name: str, pro_players: dict, fantasy_points: dict, sort_key: str, balance: int):
-    with pd.ExcelWriter(excel_file_name) as writer:
+    with pd.ExcelWriter(excel_file_name, engine='openpyxl') as writer:
         dump_points_to_excel(writer, fantasy_points, sort_key)
-        dump_captains_to_excel(writer, fantasy_points)
+        dump_captains_to_excel(writer, fantasy_points, pro_players)
         dump_teams_rating_to_excel(writer, fantasy_points, pro_players, 1000, balance, 'total points')
+
+
+def convert_to_datetime(date_str):
+    date_str = re.sub(r'\b(\d+)(st|nd|rd|th)\b', r'\1', date_str)
+    return datetime.strptime(date_str, '%B %d %Y')
 
 
 def dump_event(event_name: str, event_id: int, reload: bool, pro_players: dict, balance: int = 100, re_dump: bool = False, dump_days: bool = False, last_day_only: bool = False) -> dict:
@@ -564,7 +620,9 @@ def dump_event(event_name: str, event_id: int, reload: bool, pro_players: dict, 
         unique_days = set()
         for match in event_data['matches']:
             unique_days.add(match['day'])
-        unique_days = sorted(list(unique_days))
+        if len(unique_days) == 0:
+            return {}
+        unique_days = sorted(unique_days, key=convert_to_datetime)
         if last_day_only:
             unique_days = [list(unique_days)[-1]]
 
@@ -614,6 +672,9 @@ def dump_merged_overalls(file_name: str, overalls: list[dict], pro_players: dict
     overall_fantasy_points = merge_overalls(overalls)
     overall_fantasy_points = {key: value for key, value in overall_fantasy_points.items() if key in pro_players}
 
+    for player_name, player_info in overall_fantasy_points.items():
+        player_info['team'] = pro_players[player_name]['team']
+
     postproc_overall_fantasy_points(overall_fantasy_points)
     dump_overall(f'{output_path}/{file_name}.xlsx', overall_fantasy_points, pro_players, balance)
 
@@ -644,7 +705,7 @@ def print_balance_distribution():
 
 
 def print_cost_distribution():
-    pro_players_actual = get_pro_players('pro_players_actual.json')
+    pro_players_actual = get_pro_players('pro_players_day.json')
     costs_distribution = {10: 0, 15: 0, 20: 0, 25: 0, 30: 0, 35: 0}
     for player_name in pro_players_actual:
         cost = pro_players_actual[player_name]['cost']
@@ -652,7 +713,7 @@ def print_cost_distribution():
     print(costs_distribution)
 
 
-def calculate_predict_points_for_map(result_points: dict, pro_players: dict, players: list, fantasy_points: dict, match: dict, win_points_key: str, lose_points_key: str):
+def calculate_predict_points_for_map(result_points: dict, pro_players: dict, players: list, fantasy_points: dict, match: dict, win_points_key: str, lose_points_key: str, multiplier: float):
     for player_name in players:
         player_role = pro_players[player_name]['role']
         if player_name not in result_points[player_role].keys():
@@ -660,17 +721,17 @@ def calculate_predict_points_for_map(result_points: dict, pro_players: dict, pla
         for map_index, map_result in enumerate(match['wins']):
             map_name = match['maps'][map_index]
             map_info = fantasy_points[player_name]['maps'][map_name]
-            result_points[player_role][player_name]['points'] += map_info[win_points_key if map_result else lose_points_key] / len(match['wins'])
+            result_points[player_role][player_name]['points'] += map_info[win_points_key if map_result else lose_points_key] / len(match['wins']) * multiplier
 
 
-def print_predict(fantasy_points: dict, pro_players: dict, matches: list, balance: int):
+def print_predict(fantasy_points: dict, pro_players: dict, matches: list, balance: int, multiplier: float):
     print('')
     result_points = {'rifler': {}, 'sniper': {}}
     for match in matches:
         team1_players = [player_name for player_name, player_info in pro_players.items() if player_info['team'] == match['team1_name']]
-        calculate_predict_points_for_map(result_points, pro_players, team1_players, fantasy_points, match, 'mean points per win', 'mean points per lose')
+        calculate_predict_points_for_map(result_points, pro_players, team1_players, fantasy_points, match, 'mean points per win', 'mean points per lose', multiplier)
         team2_players = [player_name for player_name, player_info in pro_players.items() if player_info['team'] == match['team2_name']]
-        calculate_predict_points_for_map(result_points, pro_players, team2_players, fantasy_points, match, 'mean points per lose', 'mean points per win')
+        calculate_predict_points_for_map(result_points, pro_players, team2_players, fantasy_points, match, 'mean points per lose', 'mean points per win', multiplier)
 
         for map_index, map_result in enumerate(match['wins']):
             map_name = match['maps'][map_index]
@@ -693,60 +754,129 @@ def main():
     pro_players = get_pro_players('pro_players.json')
 
     overalls = [
-        dump_event('betboom-dacha-2023', 7499, False, pro_players),  # Dec 5th - Dec 10th 2023
-        dump_event('pgl-cs2-major-copenhagen-2024-na-rmr-closed-qualifier', 7409, False, pro_players),  # Jan 12th - Jan 14th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-closed-qualifier-a', 7392, False, pro_players),  # Jan 18th - Jan 20th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-closed-qualifier-b', 7619, False, pro_players),  # Jan 18th - Jan 20th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-east-asia-rmr-closed-qualifier', 7399, False, pro_players),  # Jan 19th - Jan 21st 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-sa-rmr-closed-qualifier', 7410, False, pro_players),  # Jan 19th - Jan 21st 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-decider-qualifier', 7391, False, pro_players),  # Jan 21st 2024
-        dump_event('blast-premier-spring-groups-2024', 7552, False, pro_players),  # Jan 22nd - Jan 28th 2024
-        dump_event('iem-katowice-2024-play-in', 7551, False, pro_players),  # Jan 31st - Feb 2nd 2024
-        dump_event('iem-katowice-2024', 7435, False, pro_players),  # Feb 3rd - Feb 11th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-a', 7259, False, pro_players),  # Feb 14th - Feb 17th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-b', 7577, False, pro_players),  # Feb 19th - Feb 22nd 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-asia-rmr', 7260, False, pro_players),  # Feb 26th - Feb 28th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-americas-rmr', 7261, False, pro_players),  # Mar 1st - Mar 4th 2024
-        dump_event('blast-premier-spring-showdown-2024', 7553, False, pro_players),  # Mar 6th - Mar 10th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024-opening-stage', 7258, False, pro_players),  # Mar 17th - Mar 20th 2024
-        dump_event('pgl-cs2-major-copenhagen-2024', 7148, False, pro_players),  # Mar 21st - Mar 31st 2024
-        dump_event('betboom-dacha-belgrade-2024-south-america-closed-qualifier', 7771, False, pro_players),  # Apr 4th - Apr 11th 2024
-        dump_event('betboom-dacha-belgrade-2024-europe-closed-qualifier', 7757, False, pro_players),  # Apr 2nd - Apr 12th 2024
-        dump_event('iem-chengdu-2024', 7437, False, pro_players),  # Apr 8th - Apr 14th 2024
-        dump_event('skyesports-masters-2024', 7711, False, pro_players),  # Apr 8th - Apr 14th 2024
-        dump_event('global-esports-tour-rio-2024', 7742, False, pro_players),  # Apr 18th - Apr 20th 2024
-        dump_event('esl-challenger-melbourne-2024', 7600, False, pro_players),  # Apr 26th - Apr 28th 2024
-        dump_event('cct-season-2-europe-series-1', 7781, False, pro_players),  # Apr 21st - May 4th 2024
-        dump_event('cct-season-2-europe-series-2', 7795, False, pro_players),  # Apr 29th - May 12th 2024
-        dump_event('esl-pro-league-season-19', 7440, False, pro_players),  # Apr 23rd - May 12th 2024
-        dump_event('betboom-dacha-belgrade-2024', 7755, False, pro_players),  # May 14th - May 19th 2024
-        dump_event('iem-dallas-2024', 7438, False, pro_players),  # May 27th - Jun 2nd 2024
-        dump_event('blast-premier-spring-final-2024', 7485, False, pro_players),  # Jun 12th - Jun 16th 2024
+        # dump_event('betboom-dacha-2023', 7499, False, pro_players),  # Dec 5th - Dec 10th 2023
+        # dump_event('pgl-cs2-major-copenhagen-2024-na-rmr-closed-qualifier', 7409, False, pro_players),  # Jan 12th - Jan 14th 2024
+        # dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-closed-qualifier-a', 7392, False, pro_players),  # Jan 18th - Jan 20th 2024
+        # dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-closed-qualifier-b', 7619, False, pro_players),  # Jan 18th - Jan 20th 2024
+        # dump_event('pgl-cs2-major-copenhagen-2024-east-asia-rmr-closed-qualifier', 7399, False, pro_players),  # Jan 19th - Jan 21st 2024
+        # dump_event('pgl-cs2-major-copenhagen-2024-sa-rmr-closed-qualifier', 7410, False, pro_players),  # Jan 19th - Jan 21st 2024
+        # dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-decider-qualifier', 7391, False, pro_players),  # Jan 21st 2024
+        # dump_event('blast-premier-spring-groups-2024', 7552, False, pro_players),  # Jan 22nd - Jan 28th 2024
+        # dump_event('iem-katowice-2024-play-in', 7551, False, pro_players),  # Jan 31st - Feb 2nd 2024
+        # dump_event('iem-katowice-2024', 7435, False, pro_players),  # Feb 3rd - Feb 11th 2024
+        # dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-a', 7259, False, pro_players),  # Feb 14th - Feb 17th 2024
+        # dump_event('pgl-cs2-major-copenhagen-2024-europe-rmr-b', 7577, False, pro_players),  # Feb 19th - Feb 22nd 2024
+        # dump_event('pgl-cs2-major-copenhagen-2024-asia-rmr', 7260, False, pro_players),  # Feb 26th - Feb 28th 2024
+        # dump_event('pgl-cs2-major-copenhagen-2024-americas-rmr', 7261, False, pro_players),  # Mar 1st - Mar 4th 2024
+        # dump_event('blast-premier-spring-showdown-2024', 7553, False, pro_players),  # Mar 6th - Mar 10th 2024
+        # dump_event('pgl-cs2-major-copenhagen-2024-opening-stage', 7258, False, pro_players),  # Mar 17th - Mar 20th 2024
+        # dump_event('pgl-cs2-major-copenhagen-2024', 7148, False, pro_players),  # Mar 21st - Mar 31st 2024
+        # dump_event('betboom-dacha-belgrade-2024-south-america-closed-qualifier', 7771, False, pro_players),  # Apr 4th - Apr 11th 2024
+        # dump_event('betboom-dacha-belgrade-2024-europe-closed-qualifier', 7757, False, pro_players),  # Apr 2nd - Apr 12th 2024
+        # dump_event('iem-chengdu-2024', 7437, False, pro_players),  # Apr 8th - Apr 14th 2024
+        # dump_event('skyesports-masters-2024', 7711, False, pro_players),  # Apr 8th - Apr 14th 2024
+        # dump_event('global-esports-tour-rio-2024', 7742, False, pro_players),  # Apr 18th - Apr 20th 2024
+        # dump_event('esl-challenger-melbourne-2024', 7600, False, pro_players),  # Apr 26th - Apr 28th 2024
+        # dump_event('cct-season-2-europe-series-1', 7781, False, pro_players),  # Apr 21st - May 4th 2024
+        # dump_event('cct-season-2-europe-series-2', 7795, False, pro_players),  # Apr 29th - May 12th 2024
+        # dump_event('esl-pro-league-season-19', 7440, False, pro_players),  # Apr 23rd - May 12th 2024
+        # dump_event('betboom-dacha-belgrade-2024', 7755, False, pro_players),  # May 14th - May 19th 2024
+        # dump_event('iem-dallas-2024', 7438, False, pro_players),  # May 27th - Jun 2nd 2024
+        # dump_event('blast-premier-spring-final-2024', 7485, False, pro_players),  # Jun 12th - Jun 16th 2024
+        # dump_event('cct-season-2-europe-series-6', 7899, False, pro_players),  # Jul 15th - Jul 28th 2024
+        # dump_event('cct-season-2-south-america-series-2', 7948, False, pro_players),  # Jul 15th - Aug 2nd 2024
+        # dump_event('esports-world-cup-2024', 7732, False, pro_players),  # Jul 17th - Jul 21st 2024
+        # dump_event('skyesports-championship-2024', 7847, False, pro_players),  # Jul 23rd - Jul 28th 2024
+        # dump_event('betboom-dacha-belgrade-season-2-south-america-closed-qualifier', 7994, False, pro_players),  # Jul 28th - Aug 3rd 2024
+        # dump_event('betboom-dacha-belgrade-season-2-europe-closed-qualifier', 7992, False, pro_players),  # Jul 28th - Aug 5th 2024
+        # dump_event('blast-premier-fall-groups-2024', 7554, False, pro_players),  # Jul 29th - Aug 4th 2024
+        # dump_event('iem-cologne-2024-play-in', 7675, False, pro_players),  # Aug 7th - Aug 9th 2024
+        # dump_event('iem-cologne-2024', 7436, False, pro_players),  # Aug 10th - Aug 18th 2024
+        # dump_event('betboom-dacha-belgrade-season-2', 7993, False, pro_players),  # Aug 28th - Sep 1st 2024
+        # dump_event('esl-pro-league-season-20', 7441, False, pro_players),  # Sep 3rd - Sep 22nd 2024
+        # dump_event('blast-premier-fall-final-2024', 7556, False, pro_players),  # Sep 25th - Sep 29th 2024
+        # dump_event('perfect-world-shanghai-major-2024-asia-rmr', 7862, False, pro_players),  # Sep 28th - Oct 2nd 2024
 
-        dump_event('cct-season-2-europe-series-6', 7899, False, pro_players),  # Jul 15th - Jul 28th 2024
-        dump_event('cct-season-2-south-america-series-2', 7948, False, pro_players),  # Jul 15th - Aug 2nd 2024
-        dump_event('esports-world-cup-2024', 7732, False, pro_players),  # Jul 17th - Jul 21st 2024
-        dump_event('skyesports-championship-2024', 7847, False, pro_players),  # Jul 23rd - Jul 28th 2024
-        dump_event('betboom-dacha-belgrade-season-2-south-america-closed-qualifier', 7994, False, pro_players),  # Jul 28th - Aug 3rd 2024
-        dump_event('betboom-dacha-belgrade-season-2-europe-closed-qualifier', 7992, False, pro_players),  # Jul 28th - Aug 5th 2024
-        dump_event('blast-premier-fall-groups-2024', 7554, False, pro_players),  # Jul 29th - Aug 4th 2024
-        dump_event('iem-cologne-2024-play-in', 7675, False, pro_players),  # Aug 7th - Aug 9th 2024
-        dump_event('iem-cologne-2024', 7436, True, pro_players, 110, True, True, True)  # Aug 10th - Aug 18th 2024
+        # dump_event('iem-rio-2024', 7439, False, pro_players),  # Oct 7th - Oct 13th 2024
+        # dump_event('thunderpick-world-championship-2024', 7791, False, pro_players),  # Oct 21st - Oct 26th 2024
+        # dump_event('blast-premier-world-final-2024', 7557, False, pro_players),  # Oct 30th - Nov 3rd 2024
+        # dump_event('thunderpick-world-championship-2024-finals', 7694, False, pro_players),  # Nov 2nd - Nov 3rd 2024
+        # dump_event('perfect-world-shanghai-major-2024-asia-rmr', 7862, False, pro_players),  # Nov 11th - Nov 13th 2024
+        # dump_event('perfect-world-shanghai-major-2024-americas-rmr', 7863, False, pro_players),  # Nov 12th - Nov 15th 2024
+        # dump_event('perfect-world-shanghai-major-2024-europe-rmr-a', 7864, False, pro_players),  # Nov 17th - Nov 20th 2024
+        # dump_event('perfect-world-shanghai-major-2024-europe-rmr-b', 7865, False, pro_players),  # Nov 21st - Nov 24th 2024
+        # dump_event('perfect-world-shanghai-major-2024-opening-stage', 7861, False, pro_players),  # Nov 30th - Dec 3rd 2024
+        # dump_event('perfect-world-shanghai-major-2024', 7524, False, pro_players),  # Dec 5th - Dec 15th 2024
+        # dump_event('blast-bounty-2025-season-1', 7903, False, pro_players),  # Jan 14th - Jan 19th 2025
+        # dump_event('blast-bounty-2025-season-1-finals', 7909, False, pro_players),  # Jan 23rd - Jan 26th 2025
+        # dump_event('iem-katowice-2025-play-in', 8229, False, pro_players),  # Jan 23rd - Jan 26th 2025
+        # dump_event('iem-katowice-2025', 8034, False, pro_players),  # Feb 1st - Feb 9th 2025
+        # dump_event('pgl-cluj-napoca-2025', 8043, False, pro_players),  # Feb 14th - Feb 23rd 2025
+
+        dump_event('blast-open-lisbon-2025', 7904, False, pro_players),  # Mar 19th - Mar 30th 2025
+        dump_event('pgl-bucharest-2025', 8044, False, pro_players),  # Apr 6th - Apr 13th 2025
+        dump_event('blasttv-austin-major-2025-europe-regional-qualifier', 8315, False, pro_players),  # Apr 14th - Apr 17th 2025
+        dump_event('iem-melbourne-2025', 8036, False, pro_players),  # Apr 21st - Apr 27th 2025
+        dump_event('fragadelphia-las-vegas-2025', 8457, False, pro_players),  # Apr 26th - Apr 27th 2025
+        dump_event('blast-rivals-2025-season-1', 7905, False, pro_players),  # Apr 30th - May 4th 2025
+
+        dump_event('pgl-astana-2025', 8045, False, pro_players),  # May 10th - May 18th 2025
+
+        dump_event('betboom-landalan-2', 8409, False, pro_players),  # May 10th - May 18th 2025
+
+        dump_event('yalla-compass-2025-contenders-1', 8477, False, pro_players),  # May 12th - May 27th 2025
+
+        dump_event('iem-dallas-2025', 8037, False, pro_players),  # May 19th - May 25th 2025
+
+        dump_event('cct-season-3-europe-series-2', 8503, False, pro_players),  # May 20th - Jun 1st 2025
+
+        dump_event('blasttv-austin-major-2025-stage-1', 8436, False, pro_players),  # Jun 3rd - Jun 6th 2025
+        dump_event('blasttv-austin-major-2025-stage-2', 8437, False, pro_players),  # Jun 7th - Jun 10th 2025
+        dump_event('blasttv-austin-major-2025', 7902, False, pro_players),  # Jun 12th - Jun 22nd 2025
+
+        dump_event('exort-the-proving-grounds-season-1', 8530, False, pro_players),  # Jun 6th - Jun 22nd 2025
+
+        dump_event('cct-season-3-europe-series-3', 8533, False, pro_players),  # Jun 10th - Jun 22nd 2025
+
+        dump_event('glitched-masters-2025', 8536, False, pro_players),  # Jun 13th - Jun 15th 2025
+
+        dump_event('fissure-playground-1', 8063, False, pro_players),  # Jul 15th - Jul 20th 2025
+
+        dump_event('iem-cologne-2025-stage-1', 8230, True, pro_players),  # Jul 23rd - Jul 25th 2025
+        # dump_event('iem-cologne-2025', 8038, True, pro_players, 100, True, True, True)  # Jul 26th - Aug 3rd 2025
     ]
 
-    overall_fantasy_points = dump_merged_overalls('overall', overalls, pro_players, 0)
-    dump_merged_overalls('overall_post_july', overalls[-9:], pro_players, 0)
-    dump_merged_overalls('overall_cologne', overalls[-2:], pro_players, 0)
+    dump_overalls = True
+    if dump_overalls:
+        pro_players_actual = get_pro_players('pro_players_actual.json')
+        dump_merged_overalls('overall', overalls, pro_players_actual, 0)
+        dump_merged_overalls('overall_iem-cologne-2025', overalls[-1:], pro_players_actual, 0)
 
-    next_day_balance = 110
-    pro_players_day = get_pro_players('pro_players_day.json')
-    dump_merged_overalls('day_overall', overalls, pro_players_day, next_day_balance)
-    dump_merged_overalls('day_overall_post_july', overalls[-9:], pro_players_day, next_day_balance)
-    dump_merged_overalls('day_overall_cologne', overalls[-2:], pro_players_day, next_day_balance)
-    matches = [
-        {'team1_name': 'Vitality', 'team2_name': 'NAVI', 'maps': ['Nuke', 'Dust2', 'Mirage', 'Inferno'], 'wins': [True, False, True, True]}
-    ]
-    print_predict(overall_fantasy_points, pro_players, matches, 110)
+        next_day_balance = 100
+        pro_players_day = get_pro_players('pro_players_day.json')
+        dump_merged_overalls('day_overall', overalls, pro_players_day, next_day_balance)
+        dump_merged_overalls('day_overall_iem-cologne-2025', overalls[-1:], pro_players_day, next_day_balance)
+
+        players_with_statistic = {name for overall in overalls for name in overall}
+        for player_name in pro_players_actual:
+            if player_name not in players_with_statistic:
+                print(f'{player_name} not in overalls')
+
+    # matches = [
+    #     {'team1_name': 'Vitality', 'team2_name': 'Faze', 'maps': ['Nuke', 'Mirage', 'Anubis'], 'wins': [True, False, False]},
+    #     {'team1_name': 'G2', 'team2_name': 'Heroic', 'maps': ['Ancient', 'Nuke', 'Mirage'], 'wins': [False, True, True]}
+    # ]
+    # print_predict(overall_fantasy_points, pro_players, matches, next_day_balance, 2)
+
 
 if __name__ == '__main__':
+    warnings.filterwarnings('ignore', category=DeprecationWarning)
+
+    # time.sleep(8 * 60 * 60)
+    while True:
+        main()
+        print('iteration complete')
+    #     time.sleep(random.randint(60 * 9, 60 * 12))
+        time.sleep(random.randint(60 * 20, 60 * 21))
+
     main()

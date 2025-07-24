@@ -1,53 +1,388 @@
 {
-  "JT": {
-    "team": "Complexity",
+  "MAJ3R": {
+    "team": "Aurora",
     "role": "rifler",
     "cost": 10
   },
-  "Grim": {
-    "team": "Complexity",
-    "role": "rifler",
-    "cost": 20
-  },
-  "floppy": {
-    "team": "Complexity",
-    "role": "rifler",
-    "cost": 15
-  },
-  "hallzerk": {
-    "team": "Complexity",
-    "role": "sniper",
-    "cost": 20
-  },
-  "EliGE": {
-    "team": "Complexity",
+  "XANTARES": {
+    "team": "Aurora",
     "role": "rifler",
     "cost": 30
   },
-  "MAJ3R": {
-    "team": "Eternal Fire",
-    "role": "rifler",
-    "cost": 10
-  },
-  "Calyx": {
-    "team": "Eternal Fire",
-    "role": "rifler",
-    "cost": 15
+  "woxic": {
+    "team": "Aurora",
+    "role": "sniper",
+    "cost": 20
   },
   "Wicadia": {
-    "team": "Eternal Fire",
+    "team": "Aurora",
     "role": "rifler",
     "cost": 20
   },
-  "woxic": {
-    "team": "Eternal Fire",
+  "jottAAA": {
+    "team": "Aurora",
+    "role": "rifler",
+    "cost": 15
+  },
+  "xfl0ud": {
+    "team": "Aurora",
+    "role": "rifler",
+    "cost": 20
+  },
+  "kyxsan": {
+    "team": "Falcons",
+    "role": "rifler",
+    "cost": 10
+  },
+  "m0NESY": {
+    "team": "Falcons",
+    "role": "sniper",
+    "cost": 30
+  },
+  "kyousuke": {
+    "team": "Falcons",
+    "role": "rifler",
+    "cost": 25
+  },
+  "NiKo": {
+    "team": "Falcons",
+    "role": "rifler",
+    "cost": 30
+  },
+  "TeSeS": {
+    "team": "Falcons",
+    "role": "rifler",
+    "cost": 15
+  },
+  "MATYS": {
+    "team": "G2",
+    "role": "rifler",
+    "cost": 15
+  },
+  "huNter-": {
+    "team": "G2",
+    "role": "rifler",
+    "cost": 10
+  },
+  "malbsMd": {
+    "team": "G2",
+    "role": "rifler",
+    "cost": 20
+  },
+  "SunPayus": {
+    "team": "G2",
+    "role": "sniper",
+    "cost": 20
+  },
+  "HeavyGod": {
+    "team": "G2",
+    "role": "rifler",
+    "cost": 25
+  },
+  "Brollan": {
+    "team": "MOUZ",
+    "role": "rifler",
+    "cost": 15
+  },
+  "torzsi": {
+    "team": "MOUZ",
     "role": "sniper",
     "cost": 25
   },
-  "XANTARES": {
-    "team": "Eternal Fire",
+  "Spinx": {
+    "team": "MOUZ",
     "role": "rifler",
-    "cost": 35
+    "cost": 25
+  },
+  "Jimpphat": {
+    "team": "MOUZ",
+    "role": "rifler",
+    "cost": 25
+  },
+  "xertioN": {
+    "team": "MOUZ",
+    "role": "rifler",
+    "cost": 25
+  },
+  "Aleksib": {
+    "team": "NAVI",
+    "role": "rifler",
+    "cost": 10
+  },
+  "iM": {
+    "team": "NAVI",
+    "role": "rifler",
+    "cost": 20
+  },
+  "b1t": {
+    "team": "NAVI",
+    "role": "rifler",
+    "cost": 20
+  },
+  "makazze": {
+    "team": "NAVI",
+    "role": "rifler",
+    "cost": 20
+  },
+  "w0nderful": {
+    "team": "NAVI",
+    "role": "sniper",
+    "cost": 20
+  },
+  "chopper": {
+    "team": "Spirit",
+    "role": "rifler",
+    "cost": 10
+  },
+  "sh1ro": {
+    "team": "Spirit",
+    "role": "sniper",
+    "cost": 30
+  },
+  "zweih": {
+    "team": "Spirit",
+    "role": "rifler",
+    "cost": 20
+  },
+  "zont1x": {
+    "team": "Spirit",
+    "role": "rifler",
+    "cost": 20
+  },
+  "donk": {
+    "team": "Spirit",
+    "role": "rifler",
+    "cost": 30
+  },
+  "apEX": {
+    "team": "Vitality",
+    "role": "rifler",
+    "cost": 15
+  },
+  "ropz": {
+    "team": "Vitality",
+    "role": "rifler",
+    "cost": 30
+  },
+  "ZywOo": {
+    "team": "Vitality",
+    "role": "sniper",
+    "cost": 30
+  },
+  "flameZ": {
+    "team": "Vitality",
+    "role": "rifler",
+    "cost": 25
+  },
+  "mezii": {
+    "team": "Vitality",
+    "role": "rifler",
+    "cost": 20
+  },
+  "bLitz": {
+    "team": "Mongolz",
+    "role": "rifler",
+    "cost": 20
+  },
+  "Techno": {
+    "team": "Mongolz",
+    "role": "rifler",
+    "cost": 15
+  },
+  "Senzu": {
+    "team": "Mongolz",
+    "role": "rifler",
+    "cost": 25
+  },
+  "mzinho": {
+    "team": "Mongolz",
+    "role": "rifler",
+    "cost": 20
+  },
+  "910": {
+    "team": "Mongolz",
+    "role": "sniper",
+    "cost": 25
+  },
+  "Twistzz": {
+    "team": "Liquid",
+    "role": "rifler",
+    "cost": 25
+  },
+  "NertZ": {
+    "team": "Liquid",
+    "role": "rifler",
+    "cost": 20
+  },
+  "ultimate": {
+    "team": "Liquid",
+    "role": "sniper",
+    "cost": 20
+  },
+  "NAF": {
+    "team": "Liquid",
+    "role": "rifler",
+    "cost": 15
+  },
+  "siuhy": {
+    "team": "Liquid",
+    "role": "rifler",
+    "cost": 15
+  },
+  "khaN": {
+    "team": "Nemiga",
+    "role": "sniper",
+    "cost": 15
+  },
+  "1eeR": {
+    "team": "Nemiga",
+    "role": "rifler",
+    "cost": 10
+  },
+  "riskyb0b": {
+    "team": "Nemiga",
+    "role": "rifler",
+    "cost": 10
+  },
+  "Xant3r": {
+    "team": "Nemiga",
+    "role": "rifler",
+    "cost": 15
+  },
+  "Graviti": {
+    "team": "3DMAX",
+    "role": "rifler",
+    "cost": 10
+  },
+  "Lucky": {
+    "team": "3DMAX",
+    "role": "rifler",
+    "cost": 15
+  },
+  "bodyy": {
+    "team": "3DMAX",
+    "role": "rifler",
+    "cost": 15
+  },
+  "Ex3rcice": {
+    "team": "3DMAX",
+    "role": "rifler",
+    "cost": 15
+  },
+  "Maka": {
+    "team": "3DMAX",
+    "role": "sniper",
+    "cost": 15
+  },
+  "Chr1zN": {
+    "team": "OG",
+    "role": "rifler",
+    "cost": 20
+  },
+  "Buzz": {
+    "team": "OG",
+    "role": "rifler",
+    "cost": 10
+  },
+  "F1KU": {
+    "team": "OG",
+    "role": "rifler",
+    "cost": 15
+  },
+  "nicoodoz": {
+    "team": "OG",
+    "role": "sniper",
+    "cost": 20
+  },
+  "spooke": {
+    "team": "OG",
+    "role": "rifler",
+    "cost": 10
+  },
+  "S1ren": {
+    "team": "BB",
+    "role": "rifler",
+    "cost": 15
+  },
+  "Magnojez": {
+    "team": "BB",
+    "role": "rifler",
+    "cost": 20
+  },
+  "Ax1Le": {
+    "team": "BB",
+    "role": "rifler",
+    "cost": 20
+  },
+  "Boombl4": {
+    "team": "BB",
+    "role": "rifler",
+    "cost": 15
+  },
+  "zorte": {
+    "team": "BB",
+    "role": "sniper",
+    "cost": 20
+  },
+  "esenthial": {
+    "team": "B8",
+    "role": "rifler",
+    "cost": 10
+  },
+  "kensizor": {
+    "team": "B8",
+    "role": "rifler",
+    "cost": 10
+  },
+  "npl": {
+    "team": "B8",
+    "role": "rifler",
+    "cost": 20
+  },
+  "alex666": {
+    "team": "B8",
+    "role": "rifler",
+    "cost": 10
+  },
+  "headtr1ck": {
+    "team": "B8",
+    "role": "sniper",
+    "cost": 20
+  },
+  "dumau": {
+    "team": "Legacy",
+    "role": "rifler",
+    "cost": 10
+  },
+  "saadzin": {
+    "team": "Legacy",
+    "role": "sniper",
+    "cost": 15
+  },
+  "latto": {
+    "team": "Legacy",
+    "role": "rifler",
+    "cost": 15
+  },
+  "lux": {
+    "team": "Legacy",
+    "role": "rifler",
+    "cost": 10
+  },
+  "n1ssim": {
+    "team": "Legacy",
+    "role": "rifler",
+    "cost": 10
+  },
+  "EliGE": {
+    "team": "Faze",
+    "role": "rifler",
+    "cost": 20
+  },
+  "frozen": {
+    "team": "Faze",
+    "role": "rifler",
+    "cost": 25
   },
   "karrigan": {
     "team": "Faze",
@@ -57,31 +392,21 @@
   "rain": {
     "team": "Faze",
     "role": "rifler",
-    "cost": 20
+    "cost": 15
   },
-  "frozen": {
-    "team": "Faze",
-    "role": "rifler",
-    "cost": 30
-  },
-  "broky": {
+  "s1mple": {
     "team": "Faze",
     "role": "sniper",
-    "cost": 35
-  },
-  "ropz": {
-    "team": "Faze",
-    "role": "rifler",
     "cost": 25
   },
-  "chelo": {
+  "molodoy": {
     "team": "Furia",
-    "role": "rifler",
-    "cost": 15
+    "role": "sniper",
+    "cost": 20
   },
   "FalleN": {
     "team": "Furia",
-    "role": "sniper",
+    "role": "rifler",
     "cost": 15
   },
   "yuurih": {
@@ -92,394 +417,64 @@
   "KSCERATO": {
     "team": "Furia",
     "role": "rifler",
-    "cost": 30
-  },
-  "skullz": {
-    "team": "Furia ",
-    "role": "rifler",
-    "cost": 15
-  },
-  "huNter-": {
-    "team": "G2",
-    "role": "rifler",
-    "cost": 15
-  },
-  "m0NESY": {
-    "team": "G2",
-    "role": "sniper",
-    "cost": 35
-  },
-  "NiKo": {
-    "team": "G2",
-    "role": "rifler",
-    "cost": 35
-  },
-  "Snax": {
-    "team": "G2",
-    "role": "rifler",
-    "cost": 10
-  },
-  "malbsMd": {
-    "team": "G2",
-    "role": "rifler",
     "cost": 25
   },
-  "kyxsan": {
-    "team": "Heroic",
-    "role": "rifler",
-    "cost": 10
-  },
-  "TeSeS": {
-    "team": "Heroic",
-    "role": "rifler",
-    "cost": 20
-  },
-  "sjuush": {
-    "team": "Heroic",
-    "role": "rifler",
-    "cost": 20
-  },
-  "NertZ": {
-    "team": "Heroic",
-    "role": "rifler",
-    "cost": 30
-  },
-  "VINI": {
-    "team": "Imperial",
-    "role": "rifler",
-    "cost": 10
-  },
-  "noway": {
-    "team": "Imperial",
+  "YEKINDAR": {
+    "team": "Furia",
     "role": "rifler",
     "cost": 15
   },
-  "decenty": {
-    "team": "Imperial",
-    "role": "rifler",
-    "cost": 15
-  },
-  "felps": {
-    "team": "Imperial",
-    "role": "rifler",
-    "cost": 20
-  },
-  "try": {
-    "team": "Imperial",
-    "role": "sniper",
-    "cost": 20
-  },
-  "dav1g": {
-    "team": "KOI",
-    "role": "rifler",
-    "cost": 10
-  },
-  "JUST": {
-    "team": "KOI",
-    "role": "rifler",
-    "cost": 10
-  },
-  "stadodo": {
-    "team": "KOI",
-    "role": "sniper",
-    "cost": 15
-  },
-  "mopoz": {
-    "team": "KOI",
-    "role": "rifler",
-    "cost": 15
-  },
-  "adamS": {
-    "team": "KOI",
-    "role": "rifler",
-    "cost": 15
-  },
-  "NEKIZ": {
-    "team": "Legacy",
-    "role": "rifler",
-    "cost": 10
-  },
-  "b4rtiN": {
-    "team": "Legacy",
-    "role": "rifler",
-    "cost": 10
-  },
-  "latto": {
-    "team": "Legacy",
-    "role": "rifler",
-    "cost": 15
-  },
-  "coldzera": {
-    "team": "Legacy",
-    "role": "sniper",
-    "cost": 20
-  },
-  "dumau": {
-    "team": "Legacy",
-    "role": "rifler",
-    "cost": 20
-  },
-  "westmelon": {
-    "team": "Lynn Vision",
+  "C4LLM3SU3": {
+    "team": "Lynn",
     "role": "rifler",
     "cost": 10
   },
   "EmiliaQAQ": {
-    "team": "Lynn Vision",
+    "team": "Lynn",
+    "role": "rifler",
+    "cost": 10
+  },
+  "z4kr": {
+    "team": "Lynn",
+    "role": "sniper",
+    "cost": 15
+  },
+  "Westmelon": {
+    "team": "Lynn",
     "role": "rifler",
     "cost": 10
   },
   "Starry": {
-    "team": "Lynn Vision",
-    "role": "rifler",
-    "cost": 15
-  },
-  "z4kr": {
-    "team": "Lynn Vision",
-    "role": "rifler",
-    "cost": 15
-  },
-  "Jee": {
-    "team": "Lynn Vision",
-    "role": "sniper",
-    "cost": 15
-  },
-  "siuhy": {
-    "team": "Mouz",
+    "team": "Lynn",
     "role": "rifler",
     "cost": 10
   },
-  "xertioN": {
-    "team": "Mouz",
-    "role": "rifler",
-    "cost": 30
-  },
-  "Jimpphat": {
-    "team": "Mouz",
-    "role": "rifler",
-    "cost": 30
-  },
-  "Brollan": {
-    "team": "Mouz",
-    "role": "rifler",
-    "cost": 25
-  },
-  "torzsi": {
-    "team": "Mouz",
-    "role": "sniper",
-    "cost": 25
-  },
-  "Aleksib": {
-    "team": "NAVI",
-    "role": "rifler",
-    "cost": 10
-  },
-  "w0nderful": {
-    "team": "NAVI",
-    "role": "sniper",
-    "cost": 30
-  },
-  "jL": {
-    "team": "NAVI",
-    "role": "rifler",
-    "cost": 30
-  },
-  "iM": {
-    "team": "NAVI",
-    "role": "rifler",
-    "cost": 20
-  },
-  "b1t": {
-    "team": "NAVI",
-    "role": "rifler",
-    "cost": 30
-  },
-  "biguzera": {
-    "team": "paiN",
-    "role": "rifler",
-    "cost": 20
-  },
-  "kauez": {
-    "team": "paiN",
-    "role": "rifler",
-    "cost": 10
-  },
-  "nqz": {
-    "team": "paiN",
-    "role": "sniper",
-    "cost": 20
-  },
-  "lux": {
-    "team": "paiN",
-    "role": "rifler",
-    "cost": 20
-  },
-  "snow": {
-    "team": "paiN",
-    "role": "rifler",
-    "cost": 10
-  },
-  "roman": {
-    "team": "SAW",
-    "role": "rifler",
-    "cost": 10
-  },
-  "ewjerkz": {
-    "team": "SAW",
-    "role": "rifler",
-    "cost": 20
-  },
-  "MUTiRiS": {
-    "team": "SAW",
-    "role": "rifler",
-    "cost": 10
-  },
-  "arrozdoce": {
-    "team": "SAW",
-    "role": "rifler",
-    "cost": 20
-  },
-  "story": {
-    "team": "SAW",
-    "role": "sniper",
-    "cost": 15
-  },
-  "chopper": {
-    "team": "Spirit",
+  "Lake": {
+    "team": "M80",
     "role": "rifler",
     "cost": 15
   },
-  "magixx": {
-    "team": "Spirit",
-    "role": "rifler",
-    "cost": 20
-  },
-  "zont1x": {
-    "team": "Spirit",
-    "role": "rifler",
-    "cost": 25
-  },
-  "donk": {
-    "team": "Spirit",
-    "role": "rifler",
-    "cost": 35
-  },
-  "sh1ro": {
-    "team": "Spirit",
-    "role": "sniper",
-    "cost": 35
-  },
-  "910": {
-    "team": "TheMongolz",
-    "role": "sniper",
-    "cost": 20
-  },
-  "mzinho": {
-    "team": "TheMongolz",
-    "role": "rifler",
-    "cost": 15
-  },
-  "Senzu": {
-    "team": "TheMongolz",
-    "role": "rifler",
-    "cost": 25
-  },
-  "Techno": {
-    "team": "TheMongolz",
-    "role": "rifler",
-    "cost": 15
-  },
-  "bLitz": {
-    "team": "TheMongolz",
-    "role": "rifler",
-    "cost": 25
-  },
-  "electroNic": {
-    "team": "Virtus.pro",
-    "role": "rifler",
-    "cost": 25
-  },
-  "fame": {
-    "team": "Virtus.pro",
-    "role": "rifler",
-    "cost": 20
-  },
-  "n0rb3r7": {
-    "team": "Virtus.pro",
-    "role": "rifler",
-    "cost": 15
-  },
-  "FL1T": {
-    "team": "Virtus.pro",
-    "role": "rifler",
-    "cost": 30
-  },
-  "Jame": {
-    "team": "Virtus.pro",
-    "role": "sniper",
-    "cost": 30
-  },
-  "apEX": {
-    "team": "Vitality",
+  "Swisher": {
+    "team": "M80",
     "role": "rifler",
     "cost": 10
   },
-  "mezii": {
-    "team": "Vitality",
+  "s1n": {
+    "team": "M80",
     "role": "rifler",
     "cost": 15
   },
-  "flameZ": {
-    "team": "Vitality",
-    "role": "rifler",
-    "cost": 25
-  },
-  "Spinx": {
-    "team": "Vitality",
-    "role": "rifler",
-    "cost": 30
-  },
-  "ZywOo": {
-    "team": "Vitality",
+  "slaxz-": {
+    "team": "M80",
     "role": "sniper",
-    "cost": 35
+    "cost": 20
   },
-  "Snappi": {
-    "team": "Falcons",
+  "reck": {
+    "team": "M80",
     "role": "rifler",
     "cost": 10
   },
-  "dupreeh": {
-    "team": "Falcons",
-    "role": "rifler",
-    "cost": 25
-  },
-  "Magisk": {
-    "team": "Falcons",
-    "role": "rifler",
-    "cost": 20
-  },
-  "SunPayus": {
-    "team": "Falcons",
-    "role": "sniper",
-    "cost": 25
-  },
-  "Maden": {
-    "team": "Falcons",
-    "role": "rifler",
-    "cost": 15
-  },
-  "exit": {
-    "team": "MIBR",
-    "role": "rifler",
-    "cost": 20
-  },
-  "saffee": {
-    "team": "MIBR",
-    "role": "sniper",
-    "cost": 20
-  },
-  "drop": {
+  "Lucaozy": {
     "team": "MIBR",
     "role": "rifler",
     "cost": 15
@@ -487,191 +482,111 @@
   "brnz4n": {
     "team": "MIBR",
     "role": "rifler",
+    "cost": 10
+  },
+  "exit": {
+    "team": "MIBR",
+    "role": "rifler",
+    "cost": 15
+  },
+  "saffee": {
+    "team": "MIBR",
+    "role": "sniper",
     "cost": 15
   },
   "insani": {
     "team": "MIBR",
     "role": "rifler",
-    "cost": 30
+    "cost": 20
   },
-  "device": {
-    "team": "Astralis",
-    "role": "sniper",
-    "cost": 35
-  },
-  "stavn": {
-    "team": "Astralis",
-    "role": "rifler",
-    "cost": 30
-  },
-  "br0": {
-    "team": "Astralis",
-    "role": "rifler",
-    "cost": 10
-  },
-  "jabbi": {
-    "team": "Astralis",
-    "role": "rifler",
-    "cost": 25
-  },
-  "Staehr": {
-    "team": "Astralis",
-    "role": "rifler",
-    "cost": 25
-  },
-  "max": {
-    "team": "9z",
+  "biguzera": {
+    "team": "paiN",
     "role": "rifler",
     "cost": 15
   },
   "dgt": {
-    "team": "9z",
+    "team": "paiN",
     "role": "rifler",
-    "cost": 25
+    "cost": 15
   },
-  "buda": {
-    "team": "9z",
+  "snow": {
+    "team": "paiN",
     "role": "rifler",
-    "cost": 10
+    "cost": 15
   },
-  "MartinezSa": {
-    "team": "9z",
+  "nqz": {
+    "team": "paiN",
     "role": "sniper",
     "cost": 20
   },
-  "HUASOPEEK": {
-    "team": "9z",
+  "dav1deuS": {
+    "team": "paiN",
     "role": "rifler",
     "cost": 15
   },
-  "jks": {
-    "team": "Liquid",
-    "role": "rifler",
-    "cost": 15
-  },
-  "NAF": {
-    "team": "Liquid",
-    "role": "rifler",
-    "cost": 25
-  },
-  "YEKINDAR": {
-    "team": "Liquid",
-    "role": "rifler",
-    "cost": 20
-  },
-  "Twistzz": {
-    "team": "Liquid",
-    "role": "rifler",
-    "cost": 30
-  },
-  "ultimate": {
-    "team": "Liquid",
-    "role": "sniper",
-    "cost": 15
-  },
-  "dexter": {
-    "team": "FlyQuest",
-    "role": "rifler",
-    "cost": 15
-  },
-  "Liazz": {
-    "team": "FlyQuest",
-    "role": "rifler",
-    "cost": 15
-  },
-  "aliStair": {
-    "team": "FlyQuest",
-    "role": "sniper",
-    "cost": 10
-  },
-  "INS": {
-    "team": "FlyQuest",
-    "role": "rifler",
-    "cost": 25
-  },
-  "Vexite": {
-    "team": "FlyQuest",
-    "role": "rifler",
-    "cost": 20
-  },
-  "tabsen": {
-    "team": "BIG",
-    "role": "rifler",
-    "cost": 15
-  },
-  "syrsoN": {
-    "team": "BIG",
-    "role": "sniper",
-    "cost": 15
-  },
-  "rigoN": {
-    "team": "BIG",
-    "role": "rifler",
-    "cost": 20
-  },
-  "JDC": {
-    "team": "BIG",
-    "role": "rifler",
-    "cost": 20
-  },
-  "Krimbo": {
-    "team": "BIG",
-    "role": "rifler",
-    "cost": 15
-  },
-  "PerX": {
-    "team": "ALTERNATE aTTaX",
-    "role": "rifler",
-    "cost": 15
-  },
-  "awzek": {
-    "team": "ALTERNATE aTTaX",
+  "Attacker": {
+    "team": "Tyloo",
     "role": "rifler",
     "cost": 10
   },
-  "FreeZe": {
-    "team": "ALTERNATE aTTaX",
+  "JamYoung": {
+    "team": "Tyloo",
     "role": "rifler",
-    "cost": 10
+    "cost": 15
   },
-  "hyped": {
-    "team": "ALTERNATE aTTaX",
+  "Jee": {
+    "team": "Tyloo",
     "role": "sniper",
-    "cost": 20
+    "cost": 15
   },
-  "ArroW": {
-    "team": "ALTERNATE aTTaX",
+  "Mercury": {
+    "team": "Tyloo",
+    "role": "rifler",
+    "cost": 15
+  },
+  "Moseyuh": {
+    "team": "Tyloo",
     "role": "rifler",
     "cost": 10
   },
-  "Woro2k": {
+  "yxngstxr": {
     "team": "Heroic",
-    "role": "sniper",
-    "cost": 25
+    "role": "rifler",
+    "cost": 15
   },
-  "Maka": {
-    "team": "3DMAX",
-    "role": "sniper",
-    "cost": 25
+  "LNZ": {
+    "team": "Heroic",
+    "role": "rifler",
+    "cost": 10
   },
-  "Lucky": {
-    "team": "3DMAX",
+  "tN1R": {
+    "team": "Heroic",
     "role": "rifler",
     "cost": 20
   },
-  "Djoko": {
-    "team": "3DMAX",
+  "fame": {
+    "team": "Virtus.pro",
     "role": "rifler",
     "cost": 15
   },
-  "Ex3rcice": {
-    "team": "3DMAX",
+  "FL1T": {
+    "team": "Virtus.pro",
     "role": "rifler",
-    "cost": 15
+    "cost": 25
   },
-  "Graviti": {
-    "team": "3DMAX",
+  "electroNic": {
+    "team": "Virtus.pro",
     "role": "rifler",
     "cost": 10
+  },
+  "FL4MUS": {
+    "team": "Virtus.pro",
+    "role": "rifler",
+    "cost": 15
+  },
+  "ICY": {
+    "team": "Virtus.pro",
+    "role": "sniper",
+    "cost": 20
   }
 }

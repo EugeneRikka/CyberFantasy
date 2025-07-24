@@ -5,13 +5,20 @@
     "cost": 25,
     "account_id": 183719386
   },
+  "AMMAR_THE_F": {
+    "team": "Falcons",
+    "role": "offlane",
+    "cost": 25,
+    "account_id": 183719386,
+    "save_as": "ATF"
+  },
   "Sneyking": {
     "team": "Falcons",
     "role": "support",
     "cost": 25,
     "account_id": 10366616
   },
-  "Skiter": {
+  "skiter": {
     "team": "Falcons",
     "role": "carry",
     "cost": 25,
@@ -23,7 +30,7 @@
     "cost": 30,
     "account_id": 898455820
   },
-  "Cr1t": {
+  "Cr1t-": {
     "team": "Falcons",
     "role": "support",
     "cost": 25,
@@ -41,16 +48,30 @@
     "cost": 30,
     "account_id": 0
   },
+  "Saika": {
+    "team": "BB",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 0,
+    "save_as": "Nightfall"
+  },
   "MieRo`": {
     "team": "BB",
     "role": "offlane",
     "cost": 20,
     "account_id": 0
   },
+  "MieRo ": {
+    "team": "BB",
+    "role": "offlane",
+    "cost": 20,
+    "account_id": 0,
+    "save_as": "MieRo`"
+  },
   "Save-": {
     "team": "BB",
     "role": "support",
-    "cost": 30,
+    "cost": 20,
     "account_id": 0
   },
   "TORONTOTOKYO": {
@@ -89,16 +110,23 @@
     "cost": 25,
     "account_id": 0
   },
-  "Ame^^": {
+  "Ame": {
     "team": "XG",
     "role": "carry",
     "cost": 30,
     "account_id": 0
   },
+  "Ame^^": {
+    "team": "XG",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 0,
+    "save_as": "Ame"
+  },
   "Xm": {
     "team": "XG",
     "role": "mid",
-    "cost": 25,
+    "cost": 20,
     "account_id": 0
   },
   "Xxs": {
@@ -143,6 +171,12 @@
     "cost": 20,
     "account_id": 0
   },
+  "Saksa": {
+    "team": "Tundra",
+    "role": "support",
+    "cost": 20,
+    "account_id": 103735745
+  },
   "Whitemon": {
     "team": "Tundra",
     "role": "support",
@@ -165,7 +199,8 @@
     "team": "Liquid",
     "role": "support",
     "cost": 25,
-    "account_id": 0
+    "account_id": 0,
+    "save_as": "Insania"
   },
   "m1CKe": {
     "team": "Liquid",
@@ -191,7 +226,14 @@
     "cost": 20,
     "account_id": 0
   },
-  "7e": {
+  "YSR-04E": {
+    "team": "Zero",
+    "role": "carry",
+    "cost": 20,
+    "account_id": 0,
+    "save_as": "Erika"
+  },
+  "7eeeeeee": {
     "team": "Zero",
     "role": "mid",
     "cost": 10,
@@ -203,13 +245,13 @@
     "cost": 10,
     "account_id": 0
   },
-  "Ponlo": {
+  "ponlo": {
     "team": "Zero",
     "role": "support",
     "cost": 10,
     "account_id": 0
   },
-  "Zzq": {
+  "zzq": {
     "team": "Zero",
     "role": "support",
     "cost": 10,
@@ -220,6 +262,13 @@
     "role": "carry",
     "cost": 30,
     "account_id": 0
+  },
+  "Raddan": {
+    "team": "Spirit",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 0,
+    "save_as": "Yatoro雨"
   },
   "Larl": {
     "team": "Spirit",
@@ -287,7 +336,7 @@
     "cost": 30,
     "account_id": 0
   },
-  "Ws": {
+  "Ws`": {
     "team": "Talon",
     "role": "offlane",
     "cost": 15,
@@ -299,19 +348,19 @@
     "cost": 10,
     "account_id": 0
   },
-  "Ponyo": {
+  "ponyo": {
     "team": "Talon",
     "role": "support",
     "cost": 10,
     "account_id": 0
   },
-  "Munkushi": {
+  "Munkushi~": {
     "team": "1W",
     "role": "carry",
     "cost": 25,
     "account_id": 0
   },
-  "Chira_Junior": {
+  "CHIRA_JUNIOR": {
     "team": "1W",
     "role": "mid",
     "cost": 15,
@@ -323,55 +372,55 @@
     "cost": 15,
     "account_id": 0
   },
-  "Swedenstrong": {
+  "swedenstrong": {
     "team": "1W",
     "role": "support",
     "cost": 15,
     "account_id": 0
   },
-  "Respect": {
+  "RESPECT": {
     "team": "1W",
     "role": "support",
     "cost": 15,
     "account_id": 0
   },
   "NothingToSay": {
-    "team": "G2.IG",
+    "team": "IG",
     "role": "mid",
     "cost": 20,
     "account_id": 173978074
   },
   "Monet": {
-    "team": "G2.IG",
+    "team": "IG",
     "role": "carry",
     "cost": 20,
     "account_id": 148215639
   },
   "BoBoKa": {
-    "team": "G2.IG",
+    "team": "IG",
     "role": "support",
     "cost": 15,
     "account_id": 207829314
   },
   "xNova": {
-    "team": "G2.IG",
+    "team": "IG",
     "role": "support",
     "cost": 15,
     "account_id": 94296097
   },
   "JT-": {
-    "team": "G2.IG",
+    "team": "IG",
     "role": "offlane",
     "cost": 15,
     "account_id": 138857296
   },
-  "23Savage": {
+  "23savage": {
     "team": "Aurora",
     "role": "carry",
     "cost": 20,
     "account_id": 375507918
   },
-  "Lorenof": {
+  "lorenof": {
     "team": "Aurora",
     "role": "mid",
     "cost": 25,
@@ -389,7 +438,7 @@
     "cost": 15,
     "account_id": 193815691
   },
-  "Oli": {
+  "Oli~": {
     "team": "Aurora",
     "role": "support",
     "cost": 15,
@@ -401,11 +450,18 @@
     "cost": 15,
     "account_id": 177203952
   },
-  "Copiwra": {
+  "Copy": {
     "team": "Nouns",
     "role": "mid",
     "cost": 15,
     "account_id": 115651292
+  },
+  "Copiwra": {
+    "team": "Nouns",
+    "role": "mid",
+    "cost": 15,
+    "account_id": 115651292,
+    "save_as": "Copy"
   },
   "Gunnar": {
     "team": "Nouns",
@@ -431,7 +487,14 @@
     "cost": 20,
     "account_id": 164685175
   },
-  "4nalog": {
+  "k1 hector tqmM": {
+    "team": "Heroic",
+    "role": "carry",
+    "cost": 20,
+    "account_id": 164685175,
+    "save_as": "K1"
+  },
+  "4nalog <01": {
     "team": "Heroic",
     "role": "mid",
     "cost": 15,
@@ -455,17 +518,31 @@
     "cost": 15,
     "account_id": 81306398
   },
+  "KingJungles": {
+    "team": "Heroic",
+    "role": "support",
+    "cost": 15,
+    "account_id": 81306398,
+    "save_as": "KJ"
+  },
   "payk": {
     "team": "Beastcoast",
     "role": "carry",
     "cost": 10,
     "account_id": 425588742
   },
-  "Lumpy ": {
+  "Lumpy": {
     "team": "Beastcoast",
     "role": "mid",
     "cost": 10,
     "account_id": 118948666
+  },
+  "Lumpy ": {
+    "team": "Beastcoast",
+    "role": "mid",
+    "cost": 10,
+    "account_id": 118948666,
+    "save_as": "Lumpy"
   },
   "Vitaly \u8a87\u308a": {
     "team": "Beastcoast",
