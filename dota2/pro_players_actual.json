@@ -1,122 +1,152 @@
 {
+  "Nightfall": {
+    "team": "Aurora",
+    "role": "carry",
+    "cost": 24,
+    "account_id": 124801257
+  },
+  "Mikoto": {
+    "team": "Aurora",
+    "role": "mid",
+    "cost": 23,
+    "account_id": 301750126
+  },
+  "Ws": {
+    "team": "Aurora",
+    "role": "offlane",
+    "cost": 20,
+    "account_id": 126842529
+  },
+  "Mira": {
+    "team": "Aurora",
+    "role": "support",
+    "cost": 22,
+    "account_id": 256156323
+  },
+  "Kaori": {
+    "team": "Aurora",
+    "role": "support",
+    "cost": 21,
+    "account_id": 320219866
+  },
   "Satanic": {
     "team": "PVision",
     "role": "carry",
-    "cost": 29,
+    "cost": 23,
     "account_id": 1044002267
   },
   "No[o]ne-": {
     "team": "PVision",
     "role": "mid",
-    "cost": 30,
+    "cost": 22,
     "account_id": 106573901
   },
-  "DM": {
+  "SSS": {
     "team": "PVision",
     "role": "offlane",
-    "cost": 22,
-    "account_id": 56351509
+    "cost": 19,
+    "account_id": 402583877
   },
   "9Class": {
     "team": "PVision",
     "role": "support",
-    "cost": 23,
+    "cost": 21,
     "account_id": 164199202
   },
   "Dukalis": {
     "team": "PVision",
     "role": "support",
-    "cost": 22,
+    "cost": 20,
     "account_id": 73401082
   },
-  "Skiter": {
-    "team": "Falcons",
+  "Watson": {
+    "team": "Yandex",
     "role": "carry",
-    "cost": 26,
-    "account_id": 100058342
-  },
-  "Malr1ne": {
-    "team": "Falcons",
-    "role": "mid",
-    "cost": 27,
-    "account_id": 898455820
-  },
-  "ATF": {
-    "team": "Falcons",
-    "role": "offlane",
-    "cost": 25,
-    "account_id": 183719386
-  },
-  "Cr1t": {
-    "team": "Falcons",
-    "role": "support",
     "cost": 22,
-    "account_id": 25907144
+    "account_id": 171262902
   },
-  "Sneyking": {
-    "team": "Falcons",
-    "role": "support",
-    "cost": 23,
-    "account_id": 10366616
-  },
-  "Yatoro": {
-    "team": "Spirit",
-    "role": "carry",
-    "cost": 28,
-    "account_id": 321580662
-  },
-  "Larl": {
-    "team": "Spirit",
+  "CHIRA_JUNIOR": {
+    "team": "Yandex",
     "role": "mid",
-    "cost": 25,
-    "account_id": 106305042
+    "cost": 21,
+    "account_id": 312436974
   },
-  "Collapse": {
-    "team": "Spirit",
+  "Noticed": {
+    "team": "Yandex",
     "role": "offlane",
-    "cost": 23,
-    "account_id": 302214028
+    "cost": 19,
+    "account_id": 195108598
   },
-  "Rue": {
-    "team": "Spirit",
-    "role": "support",
-    "cost": 22,
-    "account_id": 847565596
-  },
-  "Miposhka": {
-    "team": "Spirit",
+  "Saksa": {
+    "team": "Yandex",
     "role": "support",
     "cost": 23,
-    "account_id": 113331514
+    "account_id": 103735745
   },
-  "Crystallis": {
+  "Malady": {
+    "team": "Yandex",
+    "role": "support",
+    "cost": 20,
+    "account_id": 93817671
+  },
+  "Pure~": {
     "team": "Tundra",
     "role": "carry",
-    "cost": 20,
-    "account_id": 127617979
+    "cost": 21,
+    "account_id": 331855530
   },
   "Bzm": {
     "team": "Tundra",
     "role": "mid",
-    "cost": 26,
+    "cost": 22,
     "account_id": 93618577
   },
   "33": {
     "team": "Tundra",
     "role": "offlane",
-    "cost": 24,
+    "cost": 19,
     "account_id": 86698277
   },
-  "Saksa": {
+  "Ari": {
     "team": "Tundra",
     "role": "support",
-    "cost": 22,
-    "account_id": 103735745
+    "cost": 18,
+    "account_id": 346412363
   },
   "Whitemon": {
     "team": "Tundra",
     "role": "support",
-    "cost": 23,
+    "cost": 20,
     "account_id": 136829091
+  },
+  "Ame": {
+    "team": "Xtreme",
+    "role": "carry",
+    "cost": 25,
+    "account_id": 898754153
+  },
+  "NothingToSay": {
+    "team": "Xtreme",
+    "role": "mid",
+    "cost": 23,
+    "account_id": 173978074
+  },
+  "Xxs": {
+    "team": "Xtreme",
+    "role": "offlane",
+    "cost": 22,
+    "account_id": 129958758
+  },
+  "xNova": {
+    "team": "Xtreme",
+    "role": "support",
+    "cost": 24,
+    "account_id": 94296097
+  },
+  "Fy": {
+    "team": "Xtreme",
+    "role": "support",
+    "cost": 21,
+    "account_id": 101695162
   }
 }

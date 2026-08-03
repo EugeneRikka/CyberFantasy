@@ -300,27 +300,27 @@
     "cost": 10
   },
   "NothingToSay": {
-    "team": "G2.IG",
+    "team": "IG",
     "role": "mid",
     "cost": 20
   },
   "Monet": {
-    "team": "G2.IG",
+    "team": "IG",
     "role": "carry",
     "cost": 25
   },
   "Borax": {
-    "team": "G2.IG",
+    "team": "IG",
     "role": "support",
     "cost": 15
   },
   "xNova": {
-    "team": "G2.IG",
+    "team": "IG",
     "role": "support",
     "cost": 15
   },
   "JT-": {
-    "team": "G2.IG",
+    "team": "IG",
     "role": "offlane",
     "cost": 15
   },

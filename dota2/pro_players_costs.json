@@ -1,0 +1,482 @@
+{
+  "Nightfall": {
+    "team": "Aurora",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 124801257
+  },
+  "Torontotokyo": {
+    "team": "Aurora",
+    "role": "offlane",
+    "cost": 15,
+    "account_id": 431770905
+  },
+  "Mira": {
+    "team": "Aurora",
+    "role": "support",
+    "cost": 20,
+    "account_id": 256156323
+  },
+  "Panto": {
+    "team": "Aurora",
+    "role": "support",
+    "cost": 15,
+    "account_id": 108958769
+  },
+  "kiyotaka": {
+    "team": "Aurora",
+    "role": "mid",
+    "cost": 20,
+    "account_id": 858106446
+  },
+  "Smiling Knight": {
+    "team": "Avulus",
+    "role": "carry",
+    "cost": 10,
+    "account_id": 155162307
+  },
+  "Mo13ei": {
+    "team": "Avulus",
+    "role": "mid",
+    "cost": 10,
+    "account_id": 106755427
+  },
+  "Xibbe": {
+    "team": "Avulus",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 50580004
+  },
+  "dEsire": {
+    "team": "Avulus",
+    "role": "support",
+    "cost": 10,
+    "account_id": 115464954
+  },
+  "Fly": {
+    "team": "Avulus",
+    "role": "support",
+    "cost": 10,
+    "account_id": 94155156
+  },
+  "Satanic": {
+    "team": "PVision",
+    "role": "carry",
+    "cost": 25,
+    "account_id": 1044002267
+  },
+  "No[o]ne-": {
+    "team": "PVision",
+    "role": "mid",
+    "cost": 25,
+    "account_id": 106573901
+  },
+  "DM": {
+    "team": "PVision",
+    "role": "offlane",
+    "cost": 15,
+    "account_id": 56351509
+  },
+  "9Class": {
+    "team": "PVision",
+    "role": "support",
+    "cost": 15,
+    "account_id": 164199202
+  },
+  "Dukalis": {
+    "team": "PVision",
+    "role": "support",
+    "cost": 10,
+    "account_id": 73401082
+  },
+  "Pure~": {
+    "team": "BB",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 331855530
+  },
+  "gpk": {
+    "team": "BB",
+    "role": "mid",
+    "cost": 30,
+    "account_id": 480412663
+  },
+  "MieRo": {
+    "team": "BB",
+    "role": "offlane",
+    "cost": 20,
+    "account_id": 165564598
+  },
+  "Save-": {
+    "team": "BB",
+    "role": "support",
+    "cost": 20,
+    "account_id": 317880638
+  },
+  "Kataomi": {
+    "team": "BB",
+    "role": "support",
+    "cost": 15,
+    "account_id": 196878136
+  },
+  "Skiter": {
+    "team": "Falcons",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 100058342
+  },
+  "Malr1ne": {
+    "team": "Falcons",
+    "role": "mid",
+    "cost": 30,
+    "account_id": 898455820
+  },
+  "ATF": {
+    "team": "Falcons",
+    "role": "offlane",
+    "cost": 23,
+    "account_id": 183719386
+  },
+  "Cr1t": {
+    "team": "Falcons",
+    "role": "support",
+    "cost": 25,
+    "account_id": 25907144
+  },
+  "Sneyking": {
+    "team": "Falcons",
+    "role": "support",
+    "cost": 25,
+    "account_id": 10366616
+  },
+  "Yuma": {
+    "team": "Heroic",
+    "role": "carry",
+    "cost": 15,
+    "account_id": 177203952
+  },
+  "4nalog": {
+    "team": "Heroic",
+    "role": "mid",
+    "cost": 15,
+    "account_id": 131303632
+  },
+  "Wisper": {
+    "team": "Heroic",
+    "role": "offlane",
+    "cost": 15,
+    "account_id": 292921272
+  },
+  "Scofield": {
+    "team": "Heroic",
+    "role": "support",
+    "cost": 10,
+    "account_id": 157989498
+  },
+  "KJ": {
+    "team": "Heroic",
+    "role": "support",
+    "cost": 20,
+    "account_id": 81306398
+  },
+  "gotthejuice": {
+    "team": "NAVI J",
+    "role": "carry",
+    "cost": 10,
+    "account_id": 957204049
+  },
+  "Niku": {
+    "team": "NAVI J",
+    "role": "mid",
+    "cost": 15,
+    "account_id": 185590374
+  },
+  "pma": {
+    "team": "NAVI J",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 835864135
+  },
+  "Zayac": {
+    "team": "NAVI J",
+    "role": "support",
+    "cost": 15,
+    "account_id": 111030315
+  },
+  "Riddys": {
+    "team": "NAVI J",
+    "role": "support",
+    "cost": 15,
+    "account_id": 130991304
+  },
+  "Ghost": {
+    "team": "Nigma",
+    "role": "carry",
+    "cost": 10,
+    "account_id": 206642367
+  },
+  "Sumail": {
+    "team": "Nigma",
+    "role": "mid",
+    "cost": 15,
+    "account_id": 111620041
+  },
+  "No!ob": {
+    "team": "Nigma",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 140297552
+  },
+  "Omar": {
+    "team": "Nigma",
+    "role": "support",
+    "cost": 15,
+    "account_id": 152168157
+  },
+  "GH": {
+    "team": "Nigma",
+    "role": "support",
+    "cost": 10,
+    "account_id": 101356886
+  },
+  "Timado": {
+    "team": "SR",
+    "role": "carry",
+    "cost": 10,
+    "account_id": 97658618
+  },
+  "Yopaj": {
+    "team": "SR",
+    "role": "mid",
+    "cost": 15,
+    "account_id": 324277900
+  },
+  "Pakazs": {
+    "team": "SR",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 339235645
+  },
+  "Hellscream": {
+    "team": "SR",
+    "role": "support",
+    "cost": 10,
+    "account_id": 241884166
+  },
+  "Skem": {
+    "team": "SR",
+    "role": "support",
+    "cost": 10,
+    "account_id": 100594231
+  },
+  "Natsumi-": {
+    "team": "Talon",
+    "role": "carry",
+    "cost": 10,
+    "account_id": 355168766
+  },
+  "Mikoto": {
+    "team": "Talon",
+    "role": "mid",
+    "cost": 15,
+    "account_id": 301750126
+  },
+  "Ws": {
+    "team": "Talon",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 126842529
+  },
+  "Jhocam": {
+    "team": "Talon",
+    "role": "support",
+    "cost": 10,
+    "account_id": 152859296
+  },
+  "Kuku": {
+    "team": "Talon",
+    "role": "support",
+    "cost": 10,
+    "account_id": 184950344
+  },
+  "Shiro": {
+    "team": "Tidebound",
+    "role": "carry",
+    "cost": 20,
+    "account_id": 320252024
+  },
+  "NothingToSay": {
+    "team": "Tidebound",
+    "role": "mid",
+    "cost": 20,
+    "account_id": 173978074
+  },
+  "Faith_Bian": {
+    "team": "Tidebound",
+    "role": "offlane",
+    "cost": 15,
+    "account_id": 118134220
+  },
+  "Planet": {
+    "team": "Tidebound",
+    "role": "support",
+    "cost": 15,
+    "account_id": 150961567
+  },
+  "y`": {
+    "team": "Tidebound",
+    "role": "support",
+    "cost": 20,
+    "account_id": 111114687
+  },
+  "Micke": {
+    "team": "Liquid",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 152962063
+  },
+  "Nisha": {
+    "team": "Liquid",
+    "role": "mid",
+    "cost": 30,
+    "account_id": 201358612
+  },
+  "Insania": {
+    "team": "Liquid",
+    "role": "support",
+    "cost": 25,
+    "account_id": 54580962
+  },
+  "Boxi": {
+    "team": "Liquid",
+    "role": "support",
+    "cost": 25,
+    "account_id": 77490514
+  },
+  "Saberlight": {
+    "team": "Liquid",
+    "role": "offlane",
+    "cost": 20,
+    "account_id": 126212866
+  },
+  "Yatoro": {
+    "team": "Spirit",
+    "role": "carry",
+    "cost": 30,
+    "account_id": 321580662
+  },
+  "Larl": {
+    "team": "Spirit",
+    "role": "mid",
+    "cost": 25,
+    "account_id": 106305042
+  },
+  "Collapse": {
+    "team": "Spirit",
+    "role": "offlane",
+    "cost": 25,
+    "account_id": 302214028
+  },
+  "Rue": {
+    "team": "Spirit",
+    "role": "support",
+    "cost": 20,
+    "account_id": 847565596
+  },
+  "Miposhka": {
+    "team": "Spirit",
+    "role": "support",
+    "cost": 20,
+    "account_id": 113331514
+  },
+  "Payk": {
+    "team": "Mosquito",
+    "role": "carry",
+    "cost": 15,
+    "account_id": 425588742
+  },
+  "Pipi": {
+    "team": "Mosquito",
+    "role": "mid",
+    "cost": 10,
+    "account_id": 399920568
+  },
+  "Vitaly": {
+    "team": "Mosquito",
+    "role": "offlane",
+    "cost": 10,
+    "account_id": 138177198
+  },
+  "Michael": {
+    "team": "Mosquito",
+    "role": "support",
+    "cost": 10,
+    "account_id": 248180032
+  },
+  "Yadomi": {
+    "team": "Mosquito",
+    "role": "support",
+    "cost": 10,
+    "account_id": 177953305
+  },
+  "Crystallis": {
+    "team": "Tundra",
+    "role": "carry",
+    "cost": 20,
+    "account_id": 127617979
+  },
+  "Bzm": {
+    "team": "Tundra",
+    "role": "mid",
+    "cost": 25,
+    "account_id": 93618577
+  },
+  "33": {
+    "team": "Tundra",
+    "role": "offlane",
+    "cost": 23,
+    "account_id": 86698277
+  },
+  "Saksa": {
+    "team": "Tundra",
+    "role": "support",
+    "cost": 20,
+    "account_id": 103735745
+  },
+  "Whitemon": {
+    "team": "Tundra",
+    "role": "support",
+    "cost": 25,
+    "account_id": 136829091
+  },
+  "Ame": {
+    "team": "Xtreme",
+    "role": "carry",
+    "cost": 20,
+    "account_id": 898754153
+  },
+  "Xm": {
+    "team": "Xtreme",
+    "role": "mid",
+    "cost": 25,
+    "account_id": 137129583
+  },
+  "Xxs": {
+    "team": "Xtreme",
+    "role": "offlane",
+    "cost": 25,
+    "account_id": 129958758
+  },
+  "XinQ": {
+    "team": "Xtreme",
+    "role": "support",
+    "cost": 20,
+    "account_id": 157475523
+  },
+  "yftx": {
+    "team": "Xtreme",
+    "role": "support",
+    "cost": 25,
+    "account_id": 158847773
+  }
+}

@@ -1,5 +1,4 @@
 import os
-import time
 from pathlib import Path
 import itertools
 import json
@@ -33,8 +32,6 @@ def get_matches(tournament_id, reload_data):
 
 def get_match_info(match_id, reload_data):
     if reload_data and not os.path.exists(f'parsed_data/{match_id}.json'):
-        print(f'load: https://api.opendota.com/api/matches/{match_id}')
-
         # Retrieve match information from the API
         r = requests.get(f'https://api.opendota.com/api/matches/{match_id}')
         match_info = r.json()
@@ -86,6 +83,7 @@ def calculate_series_counts(matches):
     return series_counts
 
 
+printed_id = {}
 printed_names = {}
 
 
@@ -98,28 +96,9 @@ def compute_fantasy_points(tournament_id, pro_players, reload_data, min_bound=0,
 
     fantasy_points = create_fantasy_points_template(pro_players)
     series_counts = calculate_series_counts(matches)
-
-
     for match in matches['matches']:
         match_id = match['match_id']
         series_id = match['series_id']
-
-        print(f"{series_id} {match_id}")
-
-        if match_id == 8696203572:
-            series_id = 1065897
-        if match_id == 8697190420:
-            series_id = 1066150
-        if match_id == 8741939284:
-            series_id = 1078482
-        if match_id == 8743783853:
-            series_id = 1078975
-
-        if match_id == 8696203572 or match_id == 8696286823 or match_id == 8697089342 or match_id == 8697190420 or match_id == 8741939284 or match_id == 8741845487 or match_id == 8743688613 or match_id == 8743783853:
-            series_counts[series_id] = 2
-
-        # print(f"- {match_id} - {series_id}")
-
         if series_id == 903653:
             continue
 
@@ -137,7 +116,7 @@ def compute_fantasy_points(tournament_id, pro_players, reload_data, min_bound=0,
                     # 0 double damage 1 haste 2 illusion 3 invisibility 4 shield 5 gold 6 magic 7 water 8 wisdom 9 regen
                     runes_count = 0
                     for rune in player['runes']:
-                        if rune in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+                        if rune in ['0', '1', '2', '3', '4', '6', '8', '9']:
                             runes_count += player['runes'][rune]
 
                     points_details = {
@@ -155,11 +134,18 @@ def compute_fantasy_points(tournament_id, pro_players, reload_data, min_bound=0,
                         'deaths': 15 - player['deaths']
                     }
 
-                    account_id = player['account_id']
-                    if account_id not in account_id_mapping:
-                        continue
+                    player_name = player['name']
+                    if player_name is None:
+                        account_id = player['account_id']
+                        if account_id not in account_id_mapping:
+                            if account_id not in printed_id:
+                                printed_id[account_id] = ''
+                                team_name = match_info.get('dire_name' if player['team_number'] else 'radiant_name', 'not found')
+                                print(f'{account_id} skipped; team {team_name}')
 
-                    player_name = account_id_mapping[account_id]
+                            continue
+
+                        player_name = account_id_mapping[account_id]
 
                     if player_name not in pro_players:
                         if player_name not in printed_names:
@@ -195,7 +181,6 @@ def compute_fantasy_points(tournament_id, pro_players, reload_data, min_bound=0,
                 print(f"Error: {e}")
                 print(f"Match {match_id} is not ready.")
                 os.remove(f"parsed_data/{match_id}.json")
-                series_counts[series_id] -= 1
 
     for role in ['carry', 'mid', 'offlane', 'support']:
         fantasy_points[role] = {k: v for k, v in fantasy_points[role].items() if len(v) > 0}
@@ -206,7 +191,7 @@ def compute_fantasy_points(tournament_id, pro_players, reload_data, min_bound=0,
 def post_calculate_points(fantasy_points, pro_players):
     for role in ['carry', 'mid', 'offlane', 'support']:
         for player_name, player_info in list(fantasy_points[role].items()):
-            if len(player_info['fantasy points']) == 0 or player_name not in pro_players:
+            if len(player_info['fantasy points']) == 0:
                 del fantasy_points[role][player_name]
 
         for player_name in fantasy_points[role]:
@@ -229,98 +214,13 @@ def post_calculate_points(fantasy_points, pro_players):
             player_info['mean per duration'] = np.round(player_info['mean per match'] / player_info['mean duration'], 3)
             player_info['match count'] = len(player_info['fantasy points'])
 
-        metric_name = 'mean per duration'
-        # metric_name = 'mean per match'
-
-        # ---- собираем глобальные mean'ы по всем ролям ----
-        all_means = []
-        for role in ['carry', 'mid', 'offlane', 'support']:
-            for player_info in fantasy_points[role].values():
-                # берём только реальные записи игроков (с полем metric_name)
-                if isinstance(player_info, dict) and metric_name in player_info:
-                    all_means.append(float(player_info[metric_name]))
-
-        # если игроков нет — выходим
-        if not all_means:
-            return
-
-        max_points = float(np.max(all_means))
-        min_points = float(np.min(all_means))
-
-        # ---- собираем статистику по ролям ----
-        roles_info = {}
-        for role in ['carry', 'mid', 'offlane', 'support']:
-            # выбираем только игроков (без служебных записей)
-            players = [p for p in fantasy_points[role].values() if isinstance(p, dict) and metric_name in p]
-
-            if players:
-                role_means = [float(p[metric_name]) for p in players]
-                role_max = float(np.max(role_means))
-                role_min = float(np.min(role_means))
-            else:
-                role_max = None
-                role_min = None
-
-            # ограничение максимальной стоимости в зависимости от роли
-            if role in ('carry', 'mid'):
-                max_cost = 30
-            elif role == 'offlane':
-                max_cost = 25
-            else:  # support
-                max_cost = 23
-
-            roles_info[role] = {
-                'max': role_max,
-                'min': role_min,
-                'max_cost': max_cost
-            }
-
-        # ---- пересчитываем стоимости для каждого игрока ----
-        global_denom = max_points - min_points
-        for role in ['carry', 'mid', 'offlane', 'support']:
-            role_info = roles_info[role]
-            role_min = role_info['min']
-            role_max = role_info['max']
-            role_max_cost = role_info['max_cost']
-
-            # обрабатываем только игроков с рассчитанным metric_name
-            for player_name, player_info in list(fantasy_points[role].items()):
-                if not (isinstance(player_info, dict) and metric_name in player_info):
-                    continue
-
-                mean = float(player_info[metric_name])
-
-                # global cost: нормализация mean по всем ролям → диапазон [10, 30]
-                if abs(global_denom) < 1e-9:
-                    global_cost = 10.0
-                else:
-                    frac = (mean - min_points) / global_denom
-                    frac = max(0.0, min(1.0, frac))
-                    global_cost = 10.0 + frac * (30.0 - 10.0)
-
-                # global adj cost: нормализация mean по всем ролям → диапазон [10, role_max_cost]
-                if abs(global_denom) < 1e-9:
-                    global_adj_cost = 10.0
-                else:
-                    frac = (mean - min_points) / global_denom
-                    frac = max(0.0, min(1.0, frac))
-                    global_adj_cost = 10.0 + frac * (role_max_cost - 10.0)
-
-                # role cost: нормализация mean внутри своей роли → диапазон [10, role_max_cost]
-                if role_min is None or role_max is None or abs(role_max - role_min) < 1e-9:
-                    role_adj_cost = 10.0
-                else:
-                    frac = (mean - role_min) / (role_max - role_min)
-                    frac = max(0.0, min(1.0, frac))
-                    role_adj_cost = 10.0 + frac * (role_max_cost - 10.0)
-
-                # итоговые стоимости (минимум гарантированно = 10)
-                player_info['global cost'] = np.round(global_cost, 3)
-                player_info['global adj cost'] = np.round(global_adj_cost, 3)
-                player_info['role adj cost'] = np.round(role_adj_cost, 3)
 
 def dump_points_to_excel(writer, fantasy_points, pro_players, sorting_key):
     for role in ['carry', 'mid', 'offlane', 'support']:
+        if len(fantasy_points[role]) == 0:
+            continue
+
+        role_points = dict(sorted(fantasy_points[role].items(), key=lambda x: x[1][sorting_key], reverse=True))
         data = list()
         main_columns = ['total points', 'match count', 'mean per match', 'mean per win',
                         'mean per lose', 'mean per cost', 'mean duration', 'mean per duration']
@@ -328,18 +228,14 @@ def dump_points_to_excel(writer, fantasy_points, pro_players, sorting_key):
                            'towers_killed', 'roshans_killed', 'assists', 'teamfight_participation', 'gold_per_min',
                            'deaths']
         columns = ['name', 'team', 'cost'] + main_columns + details_columns
-
-        if len(fantasy_points[role]) != 0:
-            role_points = dict(sorted(fantasy_points[role].items(), key=lambda x: x[1][sorting_key], reverse=True))
-            for player_name in role_points:
-                player_info = role_points[player_name]
-                row = [player_name, pro_players[player_name]['team'], pro_players[player_name]['cost']]
-                for column_name in main_columns:
-                    row.append(player_info[column_name])
-                for column_name in details_columns:
-                    row.append(player_info['points details sum'][column_name])
-                data.append(row)
-
+        for player_name in role_points:
+            player_info = role_points[player_name]
+            row = [player_name, pro_players[player_name]['team'], pro_players[player_name]['cost']]
+            for column_name in main_columns:
+                row.append(player_info[column_name])
+            for column_name in details_columns:
+                row.append(player_info['points details sum'][column_name])
+            data.append(row)
         df = pd.DataFrame(data, columns=columns)
         sf = StyleFrame(df)
         sf.A_FACTOR = 4
@@ -387,18 +283,6 @@ def dump_teams_rating_to_excel(writer, fantasy_points, pro_players, count, balan
                     for pos5_index in range(pos4_index + 1, len(pos4_names)):
                         pos5 = pos4_names[pos5_index]
                         players_names = [pos1, pos2, pos3, pos4, pos5]
-
-                        # liquid_count = 0
-                        # mouz_count = 0
-                        # for players_name in players_names:
-                        #     if pro_players[players_name]['team'] == 'Liquid':
-                        #         liquid_count += 1
-                        #     if pro_players[players_name]['team'] == 'MOUZ':
-                        #         mouz_count += 1
-                        #
-                        # if liquid_count < 4 and mouz_count < 5:
-                        #     continue
-
                         players_points = [fantasy_points['carry'][pos1][sort_key], fantasy_points['mid'][pos2][sort_key],
                                           fantasy_points['offlane'][pos3][sort_key], fantasy_points['support'][pos4][sort_key],
                                           fantasy_points['support'][pos5][sort_key]]
@@ -468,8 +352,6 @@ def dump_day(path, tournament_id, pro_players, reload_data, min_bound, max_bound
 
 def dump_overall_to_excel(writer, fantasy_points, pro_players, sorting_key):
     for role in ['carry', 'mid', 'offlane', 'support']:
-        # main_columns = ['match count', 'total points', 'mean per match', 'global cost', 'global adj cost', 'role adj cost', 'mean per win',
-        #                 'mean per lose', 'mean per cost', 'mean duration', 'mean per duration', 'min points', 'max points', 'match points']
         main_columns = ['match count', 'total points', 'mean per match', 'mean per win',
                         'mean per lose', 'mean per cost', 'mean duration', 'mean per duration', 'min points', 'max points', 'match points']
         columns = ['name', 'team', 'cost'] + main_columns
@@ -516,19 +398,58 @@ def dump_overalls(path: str, name_prefix: str, tournament_id: int, pro_players: 
 
 
 def dump_overalls_by_points(path: str, name_prefix: str, pro_players: dict, fantasy_points: dict, balance: int = 0) -> dict:
-    # dump_overall(f'{path}/{name_prefix}overall.xlsx', pro_players, fantasy_points, 'role adj cost', balance)
     dump_overall(f'{path}/{name_prefix}overall.xlsx', pro_players, fantasy_points, 'mean per match', balance)
     dump_overall(f'{path}/{name_prefix}overall_sort_by_win.xlsx', pro_players, fantasy_points, 'mean per win', 0)
     dump_overall(f'{path}/{name_prefix}overall_sort_by_lose.xlsx', pro_players, fantasy_points, 'mean per lose', 0)
 
     return fantasy_points
 
+def dump_polar_chart():
+    # Sample data for the polar chart
+    categories = ['A', 'B', 'C', 'D', 'E']
+    values = [4, 3, 2, 5, 4]
 
-def dump_tournament(name: str, tournament_id: int, reload: bool = False, play_off_first_match: int = 0, days: list = None, balances: list = None, re_dump: bool = False, last_day_only: bool = False) -> dict:
-    output_path = f'dota2_fantasy/{name}'
+    # Create a polar plot
+    N = len(categories)
+
+    # Repeat the first value to close the circle
+    values = np.concatenate((values, [values[0]]))
+    angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
+    angles += angles[:1]  # Repeat the first angle to close the circle
+
+    # Create the polar chart
+    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+    ax.fill(angles, values, color='blue', alpha=0.25)
+    ax.set_yticklabels([])  # Hide the y-ticks
+    ax.set_xticks(angles[:-1])  # Set the category labels
+    ax.set_xticklabels(categories)
+
+    # Save the polar chart as an image
+    polar_chart_path = 'polar_chart.png'
+    plt.savefig(polar_chart_path)
+    plt.close()  # Close the figure to free up memory
+
+    # Create a DataFrame (optional, if you want to save data in Excel too)
+    df = pd.DataFrame({'Category': categories, 'Value': values[:-1]})
+
+    # Write to Excel file
+    excel_file = 'polar_chart.xlsx'
+    with pd.ExcelWriter(excel_file, engine='xlsxwriter') as writer:
+        # Write the DataFrame to the Excel file
+        df.to_excel(writer, sheet_name='Data', index=False)
+
+        # Insert the polar chart image into the Excel file
+        worksheet = writer.sheets['Data']
+        worksheet.insert_image('D2', polar_chart_path)
+
+    print(f'Polar chart saved to {excel_file} with data.')
+
+
+def dump_tournament(name: str, tournament_id: int, reload: bool, play_off_first_match: int, days: list, balances: list = None, re_dump: bool = False, last_day_only: bool = False) -> dict:
+    output_path = f'dota2_fantasy_costs/{name}'
     if re_dump:
         Path(output_path).mkdir(parents=True, exist_ok=True)
-        pro_players = get_pro_players('pro_players.json')
+        pro_players = get_pro_players('pro_players_costs.json')
         days = [1] + days + [9999999999]
         if last_day_only:
             day_num = len(days) - 2
@@ -539,12 +460,10 @@ def dump_tournament(name: str, tournament_id: int, reload: bool = False, play_of
                 balance = 100 if balances is None else balances[day_num - 1]
                 dump_day(f'{output_path}/day{day_num}.xlsx', tournament_id, pro_players, reload, days[day_num], days[day_num + 1], 'total points', balance)
 
-    pro_players_actual = get_pro_players('pro_players_actual.json')
+    pro_players_actual = get_pro_players('pro_players_costs.json')
     if play_off_first_match:
         dump_overalls(output_path, 'groups_', tournament_id, pro_players_actual, reload, 1, play_off_first_match, re_dump)
         dump_overalls(output_path, 'playoff_', tournament_id, pro_players_actual, reload, play_off_first_match, 9999999999, re_dump)
-
-    print(f'dump: {name}')
 
     return dump_overalls(output_path, '', tournament_id, pro_players_actual, reload, 1, 9999999999, re_dump)
 
@@ -577,146 +496,111 @@ def merge_overalls(overalls: list[dict]) -> dict:
 
 def main():
     overalls = [
-        # dump_tournament('7.37e-esl-one-bangkok-2024-powered-by-intel', 17509),
-        #
-        # dump_tournament('7.37e-blast-slam-i', 17414),
-        #
-        # dump_tournament('7.37e-dreamleague-season-25-qualifiers-powered-by-intel', 17628),
-        #
-        # dump_tournament('7.37e-esl-one-raleigh-2025-qualifiers', 17629),
-        #
-        # dump_tournament('7.37e-fissure-playground-open-qualifiers', 17520),
-        #
-        # dump_tournament('7.37e-fissure-playground-closed-qualifiers-eeu', 17523),
-        # dump_tournament('7.37e-fissure-playground-closed-qualifiers-weu', 17524),
-        # dump_tournament('7.37e-fissure-playground-closed-qualifiers-americas', 17525),
-        # dump_tournament('7.37e-fissure-playground-closed-qualifiers-sea', 17526),
-        # dump_tournament('7.37e-fissure-playground-closed-qualifiers-china', 17527),
-        #
-        # dump_tournament('7.37e-fissure-playground-1-dota', 17588),
-        #
-        # dump_tournament('7.37e-pgl-wallachia-season-3-open-qualifiers', 17646),
-        #
-        # dump_tournament('7.37e-pgl-wallachia-season-3-na-closed-qualifiers', 17669),
-        # dump_tournament('7.37e-pgl-wallachia-season-3-sa-closed-qualifiers', 17670),
-        # dump_tournament('7.37e-pgl-wallachia-season-3-sea-closed-qualifiers', 17671),
-        # dump_tournament('7.37e-pgl-wallachia-season-3-cn-closed-qualifiers', 17672),
-        # dump_tournament('7.37e-pgl-wallachia-season-3-weu-closed-qualifiers', 17673),
-        # dump_tournament('7.37e-pgl-wallachia-season-3-eeu-closed-qualifiers', 17674),
-        #
-        # dump_tournament('7.37e-blast-slam-ii', 17417),
-        #
-        # dump_tournament('7.37e-fissure-universe-ep-4-open-qualifiers', 17761),
-        #
-        # dump_tournament('7.37e-pgl-wallachia-season-4-open-qualifiers', 17766),
-        #
-        # dump_tournament('7.37e-fissure-universe-ep-4-closed-qualifiers-eeu', 17767),
-        # dump_tournament('7.37e-fissure-universe-ep-4-closed-qualifiers-weu', 17768),
-        # dump_tournament('7.37e-fissure-universe-ep-4-closed-qualifiers-na', 17769),
-        # dump_tournament('7.37e-fissure-universe-ep-4-closed-qualifiers-sa', 17770),
-        # dump_tournament('7.37e-fissure-universe-ep-4-closed-qualifiers-sea', 17771),
-        # dump_tournament('7.37e-fissure-universe-ep-4-closed-qualifiers-china', 17772),
-        #
-        # dump_tournament('7.37e-pgl-wallachia-season-4-eeu-closed-qualifiers', 17774),
-        # dump_tournament('7.37e-pgl-wallachia-season-4-weu-closed-qualifiers', 17775),
-        # dump_tournament('7.37e-pgl-wallachia-season-4-sea-closed-qualifiers', 17776),
-        # dump_tournament('7.37e-pgl-wallachia-season-4-cn-closed-qualifiers', 17777),
-        # dump_tournament('7.37e-pgl-wallachia-season-4-amer-closed-qualifiers', 17778),
-        #
-        # dump_tournament('7.37e–7.38-dreamleague-season-25', 17765), #16.02 - 04.03
-        #
-        # dump_tournament('7.38b-pgl-wallachia-2025-season-3', 17891), # 09.03 - 17.03
-        #
-        # dump_tournament('7.38b-7.38с-fissure-universe-episode-4', 17907), # 22.03 - 30.03
-        #
-        # dump_tournament('7.38с-dreamleague-season-26-qualifiers', 17874), # 01.04 - 03.04
-        #
-        # dump_tournament('7.38с-fissure-special', 18046), # 05.04 - 13.04
-        #
-        # dump_tournament('7.38c-esl-one-raleigh-2025', 17795), # 07.04 - 13.04
-        #
-        # dump_tournament('7.38c-pgl-wallachia-2025-season-4', 18058), # 19.04 - 27.04
-        #
-        # dump_tournament('7.38c-slam-iii', 17418), # 06.05 - 11.05
-        #
-        # dump_tournament('7.38c–7.39b-dreamleague-season-26', 18111), # 19.05 - 01.06
-        #
-        # dump_tournament('7.39c-esports-world-cup-2025-qualifiers', 18210), # 05.06 - 13.06
-        #
-        # dump_tournament('7.39c-pgl-wallachia-2025-season-5', 18358), # 21.06 - 29.06
-        #
-        # dump_tournament('7.39c-esports-world-cup-2025', 18375),
-        #
-        # dump_tournament('7.39c-clavision-dota2-masters-2025-snow-ruyi', 18359),
-        #
-        # dump_tournament('7.39d-fissure-universe-episode-6', 18433),
+        # dump_tournament('BLAST Slam I', 17414, False, 0, []), # 26.11.2024 - 01.12.2024
+        # dump_tournament('DreamLeague Season 24', 17272, False, 0, []), # 27.10.2024 - 10.11.2024
+        # dump_tournament('BetBoom Dacha Belgrade 2024', 17126, False, 0, []), # 19.10.2024 - 26.10.2024
+        # dump_tournament('PGL Wallachia Season 2', 111111, False, 0, []), # 04.10.2024 - 13.10.2024
+        # dump_tournament('The International 2024', 16935, False, 0, []), # 04.09.2024 - 15.09.2024
+        # dump_tournament('Elite League Season 1', 16483, False, 0, []), # 31.03.2024 - 14.04.2024
+        # dump_tournament('ESL One Kuala Lumpur 2023', 15910, False, 0, []), # 11.12.2023 - 17.12.2023
+        # dump_tournament('1win Series Dota 2 Fall', 16427, False, 0, []), # 19.11.2024 - 22.11.2024
+        # dump_tournament('RES Regional Champions', 16710, False, 0, []), # 22.10.2024 - 25.10.2024
+        # dump_tournament('CCT Series 5', 17425, False, 0, []), # 16.11.2024 - 25.11.2024
+        # dump_tournament('Clavision: Snow Ruyi', 16901, False, 0, []), # 28.07.2024 - 04.08.2024
+        # dump_tournament('DreamLeague Season 23', 16632, False, 0, []), # 20.05.2024 - 26.05.2024
+        # dump_tournament('RES Regional Series: SEA #1', 16207, False, 0, []), # 03.02.2024 - 21.02.2024
+        # dump_tournament('Asia Pacific Predator League 2024', 111111, False, 0, []), # 10.01.2024 - 14.01.2024
+        # dump_tournament('PGL Wallachia Season 1', 16669, False, 0, []), # 10.05.2024 - 19.05.2024
+        # dump_tournament('DreamLeague Season 22', 16201, False, 0, []), # 25.02.2024 - 10.03.2024
+        # dump_tournament('European Pro League Season 20', 15898, False, 0, []), # 14.10.2024 - 18.10.2024
+        # dump_tournament('RES Regional Series: EU #4', 16710, False, 0, []), # 16.09.2024 - 29.09.2024
+        # dump_tournament('CCT Series 4', 17111, False, 0, []), # 09.10.2024 - 18.10.2024
+        # dump_tournament('Elite League Season 2', 16905, False, 0, []), # 25.07.2024 - 04.08.2024
+        # dump_tournament('RES Regional Series: EU #3', 16707, False, 0, []), # 08.07.2024 - 23.07.2024
+        # dump_tournament('The International 2023', 15728, False, 0, []), # 12.10.2023 - 30.10.2023
+        # dump_tournament('EPL World Series: America Season 13', 15899, False, 0, []), # 04.08.2024 - 28.08.2024
+        # dump_tournament('Riyadh Masters 2024', 16881, False, 0, []), # 04.07.2024 - 21.07.2024
+        # dump_tournament('ESL One Birmingham 2024', 16518, False, 0, []), # 22.04.2024 - 28.04.2024
+        # dump_tournament('FISSURE Universe: Episode 2', 16730, False, 0, []), # 20.05.2024 - 15.06.2024
+        # dump_tournament('Illuminational Dota 2 Major', 17016, False, 0, []), # 04.08.2024 - 30.08.2024
+        # dump_tournament('European Pro League Season 10', 111111, False, 0, []), # 01.09.2023 - 18.09.2023
+        # dump_tournament('CCT Series 2', 16953, False, 0, []), # 01.08.2024 - 11.08.2024
+        # dump_tournament('Leon Masters #1', 16743, False, 0, []), # 10.06.2024 - 28.07.2024
+        # dump_tournament('Pinnacle Cup: Malta Vibes #4', 15737, False, 0, []), # 25.09.2023 - 06.10.2023
+        # dump_tournament('European Pro League Season 15', 111111, False, 0, []), # 08.04.2024 - 25.04.2024
+        # dump_tournament('Games of the Future 2024', 15981, False, 0, []), # 19.02.2024 - 24.02.2024
+        # dump_tournament('1win Series Dota 2 Summer', 16446, False, 0, []), # 27.06.2024 - 30.06.2024
+        # dump_tournament('Samsung Odyssey Cup', 16933, False, 0, []), # 10.10.2024 - 13.10.2024
+        # dump_tournament('RES Regional Series: SEA #3', 16705, False, 0, []), # 25.05.2024 - 30.06.2024
+        # dump_tournament('Cringe Station Kobolds Rave', 111111, False, 0, []), # 00.00.0000 - 00.00.0000
+        # dump_tournament('Phygital Games 2023 Season 2', 15534, False, 0, []), # 24.07.2023 - 27.07.2023
+        # dump_tournament('FISSURE Universe: Episode 3', 16846, False, 0, []), # 21.08.2024 - 25.08.2024
+        # dump_tournament('Riyadh Masters 2023', 15475, False, 0, []), # 19.07.2023 - 30.07.2023
+        # dump_tournament('ESL One Berlin Major 2023', 15251, False, 0, []), # 26.04.2023 - 07.05.2023
+        # dump_tournament('OGA Dota PIT Season 6: China', 111111, False, 0, []), # 22.02.2022 - 28.02.2022
+        # dump_tournament('Intel World Open Beijing', 13647, False, 0, []), # 18.01.2022 - 21.01.2022
+        # dump_tournament('The International 2022', 14268, False, 0, []) # 15.10.2022 - 30.10.2022
 
-        dump_tournament('7.39d-the-international-2025', 18324),
-
-        dump_tournament('7.39d-fissure-playground-2-closed-qualifiers-eeu', 18038),
-        dump_tournament('7.39d-fissure-playground-2-closed-qualifiers-china', 18667),
-        dump_tournament('7.39d-fissure-playground-2-closed-qualifiers-americas', 18668),
-        dump_tournament('7.39d-fissure-playground-2-closed-qualifiers-weu-eeu', 18670),
-        dump_tournament('7.39d-fissure-playground-2-closed-qualifiers-americas-sa', 18700),
-
-        dump_tournament('7.39d-dreamleague-season-27-qualifiers', 18629),
-
-        dump_tournament('7.39d-fissure-universe-episode-7', 18633),
-
-        dump_tournament('7.39e-res-unchained-a-blast-dota-slam-iv-qualifier-eu', 18702),
-        dump_tournament('7.39e-res-unchained-a-blast-dota-slam-iv-qualifier-sea', 18704),
-        dump_tournament('7.39e-blast-slam-iv-china-closed-qualifier', 18706),
-
-        dump_tournament('7.39e-cct-dota-2-season-2-series-5', 18666),
-
-        dump_tournament('7.39e-slam-iv', 17419),
-
-        dump_tournament('7.39e-res-unchained-a-blast-dota-slam-v-qualifier-eu', 18761),
-        dump_tournament('7.39e-res-unchained-a-blast-dota-slam-v-qualifier-sea', 18762),
-        dump_tournament('7.39e-blast-slam-v-china-closed-qualifier', 18830),
-
-        dump_tournament('7.39e-fissure-playground-2', 18863),
-
-        dump_tournament('7.39e-pgl-wallachia-2025-season-6', 18920),
-
-        dump_tournament('7.39e-slam-v', 17420), # Nov 25 – Dec 07, 2025
-
-        dump_tournament('7.39e-7.40-dreamleague-season-27', 18988), # Dec 10 – 21, 2025
-
-        dump_tournament('7.40c-fissure-universe-episode-8', 19239), # Jan 29 – Feb 01, 2026
-
-        dump_tournament('7.40c-esl-challenger-china', 19130), # Jan 30 – Feb 01, 2026
-
-        dump_tournament('7.40c-dreamleague-division-2-season-3', 19290), # Feb 04 – 12, 2026
-
-        dump_tournament('7.40c-blast-slam-vi', 19099), # Feb 03 – 15, 2026
-
-        dump_tournament('7.40c-dreamleague-season-28', 19269), #  Feb 16 – Mar 01, 2026
-
-        dump_tournament('7.40c-pgl-wallachia-2026-season-7', 19435), #  Mar 07 – Mar 15, 2026
-
-        dump_tournament('7.40c-esl-one-birmingham-2026', 19422, True, 0,
-                        [1, 8740634671, 8741845487, 8743150101, 8743783853 + 1, 8745834843],
-                        [100, 100, 100, 100, 100, 100], True, True) #  Mar 22 – Mar 29, 2026
+        dump_tournament('Intel World Open Beijing', 13647, False, 0, [], None, True),  # 18.01.2022 - 21.01.2022
+        # dump_tournament('OGA Dota PIT Season 6: China', 111111, False, 0, []),  # 22.02.2022 - 28.02.2022
+        dump_tournament('The International 2022', 14268, False, 0, [], None, True),  # 15.10.2022 - 30.10.2022
+        dump_tournament('ESL One Berlin Major 2023', 15251, False, 0, [], None, True),  # 26.04.2023 - 07.05.2023
+        dump_tournament('Riyadh Masters 2023', 15475, False, 0, [], None, True),  # 19.07.2023 - 30.07.2023
+        dump_tournament('Phygital Games 2023 Season 2', 15534, False, 0, [], None, True),  # 24.07.2023 - 27.07.2023
+        # dump_tournament('European Pro League Season 10', 111111, False, 0, []),  # 01.09.2023 - 18.09.2023
+        dump_tournament('Pinnacle Cup Malta Vibes №4', 15737, False, 0, [], None, True),  # 25.09.2023 - 06.10.2023
+        dump_tournament('The International 2023', 15728, False, 0, [], None, True),  # 12.10.2023 - 30.10.2023
+        dump_tournament('ESL One Kuala Lumpur 2023', 15910, False, 0, [], None, True),  # 11.12.2023 - 17.12.2023
+        # dump_tournament('Asia Pacific Predator League 2024', 111111, False, 0, []),  # 10.01.2024 - 14.01.2024
+        dump_tournament('RES Regional Series SEA #1', 16207, False, 0, [], None, True),  # 03.02.2024 - 21.02.2024
+        dump_tournament('Games of the Future 2024', 15981, False, 0, [], None, True),  # 19.02.2024 - 24.02.2024
+        dump_tournament('DreamLeague Season 22', 16201, False, 0, [], None, True),  # 25.02.2024 - 10.03.2024
+        dump_tournament('Elite League Season 1', 16483, False, 0, [], None, True),  # 31.03.2024 - 14.04.2024
+        # dump_tournament('European Pro League Season 15', 111111, False, 0, []),  # 08.04.2024 - 25.04.2024
+        dump_tournament('ESL One Birmingham 2024', 16518, False, 0, [], None, True),  # 22.04.2024 - 28.04.2024
+        dump_tournament('PGL Wallachia Season 1', 16669, False, 0, [], None, True),  # 10.05.2024 - 19.05.2024
+        dump_tournament('DreamLeague Season 23', 16632, False, 0, [], None, True),  # 20.05.2024 - 26.05.2024
+        dump_tournament('FISSURE Universe Episode 2', 16730, False, 0, [], None, True),  # 20.05.2024 - 15.06.2024
+        dump_tournament('RES Regional Series SEA #3', 16705, False, 0, [], None, True),  # 25.05.2024 - 30.06.2024
+        dump_tournament('Leon Masters #1', 16743, False, 0, [], None, True),  # 10.06.2024 - 28.07.2024
+        dump_tournament('1win Series Dota 2 Summer', 16446, False, 0, [], None, True),  # 27.06.2024 - 30.06.2024
+        dump_tournament('Riyadh Masters 2024', 16881, False, 0, [], None, True),  # 04.07.2024 - 21.07.2024
+        dump_tournament('RES Regional Series EU #3', 16707, False, 0, [], None, True),  # 08.07.2024 - 23.07.2024
+        dump_tournament('Elite League Season 2', 16905, False, 0, [], None, True),  # 25.07.2024 - 04.08.2024
+        dump_tournament('Clavision Snow Ruyi', 16901, False, 0, [], None, True),  # 28.07.2024 - 04.08.2024
+        dump_tournament('CCT Series 2', 16953, False, 0, [], None, True),  # 01.08.2024 - 11.08.2024
+        dump_tournament('EPL World Series America Season 13', 15899, False, 0, [], None, True),  # 04.08.2024 - 28.08.2024
+        dump_tournament('Illuminational Dota 2 Major', 17016, False, 0, [], None, True),  # 04.08.2024 - 30.08.2024
+        dump_tournament('FISSURE Universe Episode 3', 16846, False, 0, [], None, True),  # 21.08.2024 - 25.08.2024
+        dump_tournament('The International 2024', 16935, False, 0, [], None, True),  # 04.09.2024 - 15.09.2024
+        dump_tournament('RES Regional Series EU #4', 16710, False, 0, [], None, True),  # 16.09.2024 - 29.09.2024
+        dump_tournament('PGL Wallachia Season 2', 17119, False, 0, [], None, True),  # 04.10.2024 - 13.10.2024
+        dump_tournament('CCT Series 4', 17111, False, 0, [], None, True),  # 09.10.2024 - 18.10.2024
+        dump_tournament('Samsung Odyssey Cup', 16933, False, 0, [], None, True),  # 10.10.2024 - 13.10.2024
+        dump_tournament('European Pro League Season 20', 15898, False, 0, [], None, True),  # 14.10.2024 - 18.10.2024
+        dump_tournament('BetBoom Dacha Belgrade 2024', 17126, False, 0, [], None, True),  # 19.10.2024 - 26.10.2024
+        dump_tournament('RES Regional Champions', 16710, False, 0, [], None, True),  # 22.10.2024 - 25.10.2024
+        dump_tournament('DreamLeague Season 24', 17272, False, 0, [], None, True),  # 27.10.2024 - 10.11.2024
+        dump_tournament('CCT Series 5', 17425, False, 0, [], None, True),  # 16.11.2024 - 25.11.2024
+        dump_tournament('1win Series Dota 2 Fall', 16427, False, 0, [], None, True),  # 19.11.2024 - 22.11.2024
+        dump_tournament('BLAST Slam I', 17414, False, 0, [], None, True),  # 26.11.2024 - 01.12.2024
     ]
+
     re_dump = True
     if re_dump:
-        pro_players_day = get_pro_players('pro_players_day.json')
-        balance = 104
+        pro_players_actual = get_pro_players('pro_players_costs.json')
+        balance = 105
         overall_fantasy_points = merge_overalls(overalls)
-        post_calculate_points(overall_fantasy_points, pro_players_day)
-        dump_overalls_by_points('dota2_fantasy/', '', pro_players_day, overall_fantasy_points, balance)
-        overall_fantasy_points =  merge_overalls(overalls[-8:])
-        post_calculate_points(overall_fantasy_points, pro_players_day)
-        dump_overalls_by_points('dota2_fantasy/', 'post_7.40_', pro_players_day, overall_fantasy_points, balance)
-        overall_fantasy_points =  merge_overalls(overalls[-1:])
-        post_calculate_points(overall_fantasy_points, pro_players_day)
-        dump_overalls_by_points('dota2_fantasy/', 'esl-one-birmingham-2026_', pro_players_day, overall_fantasy_points, balance)
+        post_calculate_points(overall_fantasy_points, pro_players_actual)
+        dump_overalls_by_points('dota2_fantasy_costs/', '', pro_players_actual, overall_fantasy_points, balance)
+        overall_fantasy_points = overalls[-1]
+        post_calculate_points(overall_fantasy_points, pro_players_actual)
+        dump_overalls_by_points('dota2_fantasy_costs/', 'dacha_', pro_players_actual, overall_fantasy_points, balance)
 
 
 def convert_pro_players_from_cyber():
     cyber_file_name = 'pro_players2.json'
-    pro_players_file_name = 'pro_players.json'
+    pro_players_file_name = 'pro_players_costs.json'
     with open(cyber_file_name, 'r', encoding='utf8') as read_file:
         pro_players = {}
         for line in read_file.readlines():
@@ -728,151 +612,6 @@ def convert_pro_players_from_cyber():
             json.dump(pro_players, write_file, indent=2)
 
 
-def calculate_table_ties(table, matches):
-    values = [0, 1, 2]
-    combinations = itertools.product(values, repeat=len(matches))
-    results = table.copy()
-    results_weighted = table.copy()
-    for team in results:
-        results[team] = 0
-        results_weighted[team] = 0
-
-    combinations_count = 0
-
-    combo_probability = 0
-    for combination in combinations:
-        combinations_count += 1
-        combination_table = table.copy()
-        probability = 1.00
-        for index, value in enumerate(combination):
-            match = matches[index]
-            if value == 0:
-                combination_table[match['teams'][0]] += 2
-                # print(f'{match['teams'][0]} {match['teams'][1]} 2:0')
-            elif value == 1:
-                combination_table[match['teams'][0]] += 1
-                combination_table[match['teams'][1]] += 1
-                # print(f'{match['teams'][0]} {match['teams'][1]} 1:1')
-            elif value == 2:
-                combination_table[match['teams'][1]] += 2
-                # print(f'{match['teams'][0]} {match['teams'][1]} 0:2')
-
-            probability *= match['probabilities'][value]
-
-        combination_table = dict(sorted(combination_table.items(), key=lambda x: x[1], reverse=True))
-        table_values = list(combination_table.values())
-
-        # print(combination_table)
-        teams = {}
-        if table_values[0] == table_values[1]:
-            for team, value in combination_table.items():
-                if value == table_values[0]:
-                    teams[team] = True
-                    # print(team)
-                    results[team] += 1
-                    results_weighted[team] += probability
-
-        if table_values[1] == table_values[2]:
-            if table_values[2] == table_values[0]:
-                continue
-
-            for team, value in combination_table.items():
-                if value == table_values[2]:
-                    teams[team] = True
-                    # print(team)
-                    results[team] += 1
-                    results_weighted[team] += probability
-        # if 'Avulus' in teams and 'Tundra' in teams:
-        #     print('+')
-        #     combo_probability += probability
-        # print('\n')
-
-    # print(combo_probability)
-
-    teams_names = results.keys()
-    results_values = list(results.values())
-    weighted_results_values = list(results_weighted.values())
-    for i, team_name in enumerate(teams_names):
-        print(f'{team_name}: by combinations: {results_values[i] / combinations_count * 100:.0f}% ({results_values[i]} of {combinations_count}), by BetBoom coeffs: {weighted_results_values[i] * 100:.0f}%')
-
-
-def calculate_probabilities(matches):
-    for match in matches:
-        match['probabilities'] = []
-        margin = 0.00
-        for coefficient in match['coefficients']:
-            margin += 1.00 / coefficient
-        margin -= 1.00
-        for coefficient in match['coefficients']:
-            match['probabilities'].append(1.00 / coefficient - margin / len(match['coefficients']))
-
-
-def calculate_ties():
-    table_a = {
-        'NAVI': 3,
-        'Spirit': 3,
-        'Talon': 1,
-        'Extreme': 1
-    }
-
-    matches_a = [
-        {'teams': ['Talon', 'Extreme'], 'coefficients': [4.80, 2.25, 2.50]},
-        {'teams': ['Spirit', 'NAVI'], 'coefficients': [1.98, 2.40, 8.00]}
-    ]
-    calculate_probabilities(matches_a)
-
-    print('Group A')
-    calculate_table_ties(table_a, matches_a)
-
-    table_b = {
-        'BB': 3,
-        'GG': 3,
-        'Exectration': 1,
-        'Falcons': 1
-    }
-
-    matches_b = [
-        {'teams': ['BB', 'Exectration'], 'coefficients': [1.45, 3.6, 11.00]},
-        {'teams': ['Falcons', 'GG'], 'coefficients': [4.2, 1.98, 3.4]},
-    ]
-    calculate_probabilities(matches_b)
-
-    print('\nGroup B')
-    calculate_table_ties(table_b, matches_b)
-
-    table_c = {
-        'Aurora': 3,
-        'Tundra': 3,
-        'Yandex': 2,
-        'VP': 0
-    }
-
-    matches_c = [
-        {'teams': ['Tundra', 'Yandex'], 'coefficients': [1.65, 2.9, 11.00]},
-        {'teams': ['Aurora', 'VP'], 'coefficients': [1.70, 2.90, 9.00]}
-    ]
-    calculate_probabilities(matches_c)
-
-    print('\nGroup C')
-    calculate_table_ties(table_c, matches_c)
-
-    table_d = {
-        'Liquid': 4,
-        'PVision': 2,
-        'Heroic': 2,
-        'Shopify': 0
-    }
-
-    matches_d = [
-        {'teams': ['Liquid', 'Heroic'], 'coefficients': [1.82, 2.70, 8.00]},
-        {'teams': ['PVision', 'Shopify'], 'coefficients': [1.40, 3.80, 12.00]},
-    ]
-    calculate_probabilities(matches_d)
-
-    print('\nGroup D')
-    calculate_table_ties(table_d, matches_d)
-
-
 def count_valid_teams(pro_players_actual, carry_names, mid_names, offlane_names, support_names, max_cost):
     teams_count = 0
     for carry_name in carry_names:
@@ -881,16 +620,12 @@ def count_valid_teams(pro_players_actual, carry_names, mid_names, offlane_names,
                 for comb in itertools.combinations(support_names, 2):
                     cost = pro_players_actual[carry_name]['cost'] + pro_players_actual[mid_name]['cost'] + pro_players_actual[offlane_name]['cost'] + sum(pro_players_actual[player]['cost'] for player in comb)
                     if cost <= max_cost:
-                        # if carry_name == 'Satanic' and mid_name == "No[o]ne-":
-                        #     if  pro_players_actual[mid_name]['team'] != "Spirit" and pro_players_actual[offlane_name]['team'] != "Spirit" and pro_players_actual[comb[0]]['team'] != "Spirit" and + pro_players_actual[comb[1]]['cost']:
-                        #     # print(f'{carry_name} {mid_name} {offlane_name} {comb[0]} {comb[1]}')
-                        #         teams_count += 1
                         teams_count += 1
     return teams_count
 
 
 def print_balance_distribution():
-    pro_players_actual = get_pro_players('pro_players_actual.json')
+    pro_players_actual = get_pro_players('pro_players_day.json')
 
     carry_names = [player_name for player_name, player_data in pro_players_actual.items() if player_data['role'] == 'carry' and 'save_as' not in player_data]
     mid_names = [player_name for player_name, player_data in pro_players_actual.items() if player_data['role'] == 'mid' and 'save_as' not in player_data]
@@ -901,15 +636,10 @@ def print_balance_distribution():
     print(f'offlane count = {len(offlane_names)}')
     print(f'support count = {len(support_names)}')
     teams_count = len(carry_names) * len(mid_names) * len(offlane_names) * sum(1 for _ in itertools.combinations(support_names, 2))
-    for balance in range(100, 140, 1):
+    for balance in range(100, 200, 5):
         teams_count_for_balance = count_valid_teams(pro_players_actual, carry_names, mid_names, offlane_names, support_names, balance)
         print(f'{balance}: {teams_count_for_balance}/{teams_count} {round(1.0 * teams_count_for_balance / teams_count * 100, 3)}%')
 
 
 if __name__ == '__main__':
-    while True:
-        main()
-        print('iteration complete')
-        time.sleep(180)
-
     main()

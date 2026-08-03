@@ -27,7 +27,8 @@ def get_selenium_driver() -> uc.Chrome:
     driver = uc.Chrome(options=options, no_sandbox=False, user_multi_procs=False, use_subprocess=False)
 
     driver.execute_cdp_cmd('Emulation.setTimezoneOverride', {
-        'timezoneId': 'Europe/Berlin'
+        'timezoneId': 'Europe/London'
+        # 'timezoneId': 'Europe/Berlin'
         # 'timezoneId': 'America/Chicago'
     })
 
@@ -161,15 +162,15 @@ def parse_match(match: dict) -> bool:
 
 
 def parse_event(event_id: int, reload: bool) -> dict:
-    if reload:
-        matches = get_matches(event_id, reload)
-        approved_matches = []
-        for match in matches:
-            if parse_match(match):
-                approved_matches.append(match)
-
-        return {'matches': approved_matches}
-    else:
+    # if reload:
+    #     matches = get_matches(event_id, reload)
+    #     approved_matches = []
+    #     for match in matches:
+    #         if parse_match(match):
+    #             approved_matches.append(match)
+    #
+    #     return {'matches': approved_matches}
+    # else:
         matches = get_matches(event_id, reload)
         with concurrent.futures.ThreadPoolExecutor() as executor:
             results = list(executor.map(parse_match, matches))
@@ -428,6 +429,7 @@ def compute_overall_fantasy_points(event_data: dict) -> dict:
                         'overtimes count': 0,
                         'rounds won': [],
                         'maps points': '',
+                        'maps count': 0,
                         'maps': {}
                     }
                 player_info = fantasy_points[player_name]
@@ -443,6 +445,7 @@ def compute_overall_fantasy_points(event_data: dict) -> dict:
                 player_info['overtimes count'] += is_overtime
                 player_info['rounds won'].append(rounds_won)
                 player_info['maps points'] += '{0: <7}'.format(points_sum)
+                player_info['maps count'] += 1
 
                 if map_stat['name'] not in player_info['maps']:
                     player_info['maps'][map_stat['name']] = {
@@ -511,10 +514,11 @@ def postproc_overall_fantasy_points(fantasy_points: dict):
             player_info['maps'][map_name]['map rating'] = map_ratings[map_name]
 
 
+
 def dump_overall_to_excel(writer, fantasy_points, sort_key):
     fantasy_points = dict(sorted(fantasy_points.items(), key=lambda x: x[1][sort_key], reverse=True))
     data = list()
-    main_columns = ['team', 'role', 'cost', 'mean points', 'mean points per win', 'mean points per lose', 'winrate', 'overtimes', 'mean points per round', 'mean points per cost', 'min points', 'max points', 'rounds winrate', 'maps points']
+    main_columns = ['team', 'role', 'cost', 'mean points', 'mean points per win', 'mean points per lose', 'winrate', 'overtimes', 'mean points per round', 'mean points per cost', 'min points', 'max points', 'rounds winrate', 'maps count', 'maps points']
     for player_name, player_info in fantasy_points.items():
         row = [player_name]
         for column_name in main_columns:
@@ -692,7 +696,7 @@ def count_valid_teams(pro_players_actual, riflers_names, snipers_names, max_cost
 
 
 def print_balance_distribution():
-    pro_players_actual = get_pro_players('pro_players_day.json')
+    pro_players_actual = get_pro_players('pro_players_day_rikka.json')
 
     snipers_names = [player_name for player_name, player_data in pro_players_actual.items() if player_data['role'] == 'sniper']
     riflers_names = [player_name for player_name, player_data in pro_players_actual.items() if player_data['role'] == 'rifler']
@@ -813,12 +817,12 @@ def main():
         # dump_event('iem-katowice-2025', 8034, False, pro_players),  # Feb 1st - Feb 9th 2025
         # dump_event('pgl-cluj-napoca-2025', 8043, False, pro_players),  # Feb 14th - Feb 23rd 2025
 
-        dump_event('blast-open-lisbon-2025', 7904, False, pro_players),  # Mar 19th - Mar 30th 2025
-        dump_event('pgl-bucharest-2025', 8044, False, pro_players),  # Apr 6th - Apr 13th 2025
-        dump_event('blasttv-austin-major-2025-europe-regional-qualifier', 8315, False, pro_players),  # Apr 14th - Apr 17th 2025
-        dump_event('iem-melbourne-2025', 8036, False, pro_players),  # Apr 21st - Apr 27th 2025
-        dump_event('fragadelphia-las-vegas-2025', 8457, False, pro_players),  # Apr 26th - Apr 27th 2025
-        dump_event('blast-rivals-2025-season-1', 7905, False, pro_players),  # Apr 30th - May 4th 2025
+        # dump_event('blast-open-lisbon-2025', 7904, False, pro_players),  # Mar 19th - Mar 30th 2025
+        # dump_event('pgl-bucharest-2025', 8044, False, pro_players),  # Apr 6th - Apr 13th 2025
+        # dump_event('blasttv-austin-major-2025-europe-regional-qualifier', 8315, False, pro_players),  # Apr 14th - Apr 17th 2025
+        # dump_event('iem-melbourne-2025', 8036, False, pro_players),  # Apr 21st - Apr 27th 2025
+        # dump_event('fragadelphia-las-vegas-2025', 8457, False, pro_players),  # Apr 26th - Apr 27th 2025
+        # dump_event('blast-rivals-2025-season-1', 7905, False, pro_players),  # Apr 30th - May 4th 2025
 
         dump_event('pgl-astana-2025', 8045, False, pro_players),  # May 10th - May 18th 2025
 
@@ -842,20 +846,53 @@ def main():
 
         dump_event('fissure-playground-1', 8063, False, pro_players),  # Jul 15th - Jul 20th 2025
 
-        dump_event('iem-cologne-2025-stage-1', 8230, True, pro_players),  # Jul 23rd - Jul 25th 2025
-        # dump_event('iem-cologne-2025', 8038, True, pro_players, 100, True, True, True)  # Jul 26th - Aug 3rd 2025
+        dump_event('iem-cologne-2025-stage-1', 8230, False, pro_players),  # Jul 23rd - Jul 25th 2025
+        dump_event('iem-cologne-2025', 8038, False, pro_players),  # Jul 26th - Aug 3rd 2025
+
+        dump_event('blast-bounty-2025-season-2', 7906, False, pro_players),  # Aug 5th - Aug 10th 2025
+        dump_event('blast-bounty-2025-season-2-finals', 7910, False, pro_players),  # Aug 14th - Aug 17th 2025
+
+        dump_event('esports-world-cup-2025', 8039, False, pro_players),  # Aug 20th - Aug 24th 2025
+
+        dump_event('blast-open-london-2025', 7907, False, pro_players),  # Aug 27th - Sep 1st 2025
+        dump_event('blast-open-london-2025-finals', 7912, False, pro_players),  # Sep 5th - Sep 7th 2025
+
+        dump_event('fissure-playground-2', 8064, False, pro_players),  # Sep 12th - Sep 21st 2025
+
+        dump_event('starladder-starseries-fall-2025', 8539, False, pro_players),  # Sep 18th - Sep 21st 2025
+
+        dump_event('esl-pro-league-season-22-stage-1', 8393, False, pro_players),  # Sep 28th - Oct 2nd 2025
+        dump_event('esl-pro-league-season-22', 8040, False, pro_players),  # Oct 4th - Oct 12th 2025
+
+        dump_event('CS-Asia-Championships-2025', 8027, False, pro_players),  # Oct 14th - Oct 19th 2025
+
+        dump_event('Thunderpick-World-Championship-2025', 8067, False, pro_players),  # Oct 15th - Oct 19th 2025
+
+        dump_event('PGL-Masters-Bucharest-2025', 8046, False, pro_players),  # Oct 26th - Nov 1th 2025
+
+        dump_event('iem-chengdu-2025', 8041, False, pro_players),  # Nov 3rd - Nov 9th 2025
+
+        dump_event('blast-rivals-2025-season-2', 7908, False, pro_players),  # Nov 12th - Nov 16th 2025
+
+        dump_event('starladder-budapest-major-2025-stage-1', 8504, False, pro_players),  # Nov 12th - Nov 16th 2025
+        dump_event('starladder-budapest-major-2025-stage-2', 8505, False, pro_players),  # Nov 12th - Nov 16th 2025
+        dump_event('starladder-budapest-major-2025', 8042, False, pro_players, 100, False, True, True),  # Nov 12th - Nov 16th 2025
     ]
 
     dump_overalls = True
     if dump_overalls:
         pro_players_actual = get_pro_players('pro_players_actual.json')
         dump_merged_overalls('overall', overalls, pro_players_actual, 0)
-        dump_merged_overalls('overall_iem-cologne-2025', overalls[-1:], pro_players_actual, 0)
+        dump_merged_overalls('overall_post_june', overalls[-20:], pro_players_actual, 0)
+        dump_merged_overalls('overall_post_blast_london', overalls[-14:], pro_players_actual, 0)
+        dump_merged_overalls('overall_starladder', overalls[-3:], pro_players_actual, 0)
 
         next_day_balance = 100
         pro_players_day = get_pro_players('pro_players_day.json')
         dump_merged_overalls('day_overall', overalls, pro_players_day, next_day_balance)
-        dump_merged_overalls('day_overall_iem-cologne-2025', overalls[-1:], pro_players_day, next_day_balance)
+        dump_merged_overalls('day_overall_post_june', overalls[-20:], pro_players_day, next_day_balance)
+        dump_merged_overalls('day_overall_post_blast_london', overalls[-14:], pro_players_day, next_day_balance)
+        dump_merged_overalls('day_overall_starladder', overalls[-3:], pro_players_day, next_day_balance)
 
         players_with_statistic = {name for overall in overalls for name in overall}
         for player_name in pro_players_actual:
@@ -872,11 +909,9 @@ def main():
 if __name__ == '__main__':
     warnings.filterwarnings('ignore', category=DeprecationWarning)
 
-    # time.sleep(8 * 60 * 60)
     while True:
         main()
         print('iteration complete')
-    #     time.sleep(random.randint(60 * 9, 60 * 12))
-        time.sleep(random.randint(60 * 20, 60 * 21))
+        time.sleep(random.randint(60 * 4, 60 * 6))
 
-    main()
+    # main()
